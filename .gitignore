@@ -1,0 +1,6 @@
+# Planning and AI guidance files
+*.md
+
+# macOS metadata
+.DS_Store
+**/.DS_Store

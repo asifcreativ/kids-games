@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shape Safari 🦁</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #0d0b2a;
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Star background ── */
+    .bg-star {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(255,255,255,.55);
+      pointer-events: none;
+      animation: riseStar linear infinite;
+    }
+    @keyframes riseStar {
+      from { transform: translateY(105vh); opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
+      to   { transform: translateY(-5vh);  opacity: 0; }
+    }
+
+    /* ── HUD ── */
+    #hud {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 200;
+      pointer-events: none;
+    }
+    #game-title {
+      font-size: 1.3rem; font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+    }
+    #score-pill {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 50px;
+      padding: 7px 18px;
+      color: #fff; font-size: .9rem; font-weight: 800;
+    }
+
+    /* ── Slide-in banner ── */
+    #banner {
+      position: fixed;
+      top: 68px; left: 50%;
+      transform: translateX(-50%) translateY(-90px);
+      background: #fff;
+      border-radius: 50px;
+      padding: 11px 26px;
+      font-size: 1.25rem; font-weight: 900; color: #1e293b;
+      box-shadow: 0 8px 32px rgba(0,0,0,.22);
+      z-index: 300;
+      white-space: nowrap;
+      pointer-events: none;
+      transition: transform .38s cubic-bezier(.34,1.56,.64,1);
+    }
+    #banner.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Hint ── */
+    #hint {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.55);
+      font-size: 1rem; font-weight: 700;
+      pointer-events: none;
+      transition: opacity 1.2s;
+    }
+    #hint.hidden { opacity: 0; }
+
+    /* ── Shapes ── */
+    .shape {
+      position: fixed;
+      top: 0; left: 0;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      /* box-shadow added inline */
+    }
+
+    /* hover question mark */
+    .shape:hover::after {
+      content: '?';
+      position: absolute;
+      font-size: 1.8rem; font-weight: 900;
+      color: rgba(255,255,255,.7);
+      pointer-events: none;
+    }
+    /* hide ? while in animal state */
+    .shape.is-animal:hover::after { display: none; }
+
+    /* ── Shape → Animal animations ── */
+    @keyframes spinOut {
+      from { transform: rotate(0deg)   scale(1); }
+      to   { transform: rotate(540deg) scale(0); }
+    }
+    @keyframes animalPop {
+      0%   { transform: scale(0)    rotate(-15deg); }
+      55%  { transform: scale(1.25) rotate(6deg);  }
+      78%  { transform: scale(.92); }
+      100% { transform: scale(1)    rotate(0deg);  }
+    }
+    @keyframes animalOut {
+      from { transform: scale(1); }
+      to   { transform: scale(0) rotate(240deg); }
+    }
+    @keyframes shapeReturn {
+      0%   { transform: scale(0)    rotate(90deg); }
+      60%  { transform: scale(1.1)  rotate(-4deg); }
+      100% { transform: scale(1)    rotate(0deg);  }
+    }
+
+    .shape.anim-out     { animation: spinOut     .3s  ease-in  forwards; }
+    .shape.anim-animal  { animation: animalPop   .42s cubic-bezier(.36,.07,.19,.97) forwards; }
+    .shape.anim-out2    { animation: animalOut   .28s ease-in  forwards; }
+    .shape.anim-return  { animation: shapeReturn .38s cubic-bezier(.36,.07,.19,.97) forwards; }
+
+    /* Animal state overrides */
+    .shape.is-animal {
+      border-radius: 50% !important;
+      clip-path: none !important;
+      background: #fff !important;
+      font-size: 3.2rem;
+      line-height: 1;
+    }
+
+    /* ── Sparkles ── */
+    .spark {
+      position: fixed;
+      font-size: 1.3rem;
+      pointer-events: none;
+      z-index: 400;
+      animation: sparkFly .75s ease-out forwards;
+    }
+    @keyframes sparkFly {
+      from { transform: translate(0,0) scale(1.1); opacity: 1; }
+      to   { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="game-title">🦁 Shape Safari</div>
+  <div id="score-pill">Found: <span id="count">0</span> 🐾</div>
+</div>
+
+<!-- Slide banner -->
+<div id="banner"></div>
+
+<!-- Hint -->
+<div id="hint">👆 Tap the shapes!</div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const SHAPES = [
+  { name: 'circle',   br: '50%',  cp: '' },
+  { name: 'square',   br: '14px', cp: '' },
+  { name: 'triangle', br: '',     cp: 'polygon(50% 0%, 100% 100%, 0% 100%)' },
+  { name: 'diamond',  br: '',     cp: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' },
+  { name: 'star',     br: '',     cp: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' },
+  { name: 'hexagon',  br: '',     cp: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' },
+  { name: 'cross',    br: '',     cp: 'polygon(33% 0%, 67% 0%, 67% 33%, 100% 33%, 100% 67%, 67% 67%, 67% 100%, 33% 100%, 33% 67%, 0% 67%, 0% 33%, 33% 33%)' },
+  { name: 'pentagon', br: '',     cp: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' },
+];
+
+const ANIMALS = [
+  { emoji:'🐱', name:'Cat',       sound:'Meow!',       pitch:1.7, rate:1.1 },
+  { emoji:'🐶', name:'Dog',       sound:'Woof woof!',  pitch:1.2, rate:1.0 },
+  { emoji:'🦁', name:'Lion',      sound:'Roar!',       pitch:0.6, rate:0.85 },
+  { emoji:'🐮', name:'Cow',       sound:'Moooo!',      pitch:0.7, rate:0.7  },
+  { emoji:'🐸', name:'Frog',      sound:'Ribbit!',     pitch:1.1, rate:1.0  },
+  { emoji:'🐷', name:'Pig',       sound:'Oink oink!',  pitch:1.1, rate:1.1  },
+  { emoji:'🦆', name:'Duck',      sound:'Quack!',      pitch:1.4, rate:1.2  },
+  { emoji:'🐝', name:'Bee',       sound:'Buzz buzz!',  pitch:1.8, rate:1.4  },
+  { emoji:'🐘', name:'Elephant',  sound:'Paaah!',      pitch:0.4, rate:0.75 },
+  { emoji:'🦊', name:'Fox',       sound:'Yip yip!',    pitch:1.4, rate:1.2  },
+  { emoji:'🐧', name:'Penguin',   sound:'Squawk!',     pitch:1.2, rate:1.1  },
+  { emoji:'🦋', name:'Butterfly', sound:'Flutter!',    pitch:1.9, rate:1.5  },
+];
+
+const GRADS = [
+  'linear-gradient(135deg,#FF6B6B,#FF8E53)',
+  'linear-gradient(135deg,#4ECDC4,#44A08D)',
+  'linear-gradient(135deg,#A78BFA,#EC4899)',
+  'linear-gradient(135deg,#F093FB,#F5576C)',
+  'linear-gradient(135deg,#4FACFE,#00F2FE)',
+  'linear-gradient(135deg,#43E97B,#38F9D7)',
+  'linear-gradient(135deg,#FA709A,#FEE140)',
+  'linear-gradient(135deg,#667EEA,#764BA2)',
+  'linear-gradient(135deg,#FF9A9E,#FAD0C4)',
+  'linear-gradient(135deg,#F7971E,#FFD200)',
+];
+
+const SPARKS = ['⭐','✨','🌟','💫','🎉','🎊','🎈'];
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+const rand  = (a, b) => a + Math.random() * (b - a);
+const rInt  = (a, b) => ~~rand(a, b);
+const pick  = arr => arr[rInt(0, arr.length)];
+let   W = innerWidth, H = innerHeight;
+window.addEventListener('resize', () => { W = innerWidth; H = innerHeight; });
+
+/* ══════════════════════════════════════
+   STAR BACKGROUND
+══════════════════════════════════════ */
+for (let i = 0; i < 28; i++) {
+  const el = document.createElement('div');
+  el.className = 'bg-star';
+  const sz = 1.5 + Math.random() * 3;
+  el.style.cssText = `width:${sz}px;height:${sz}px;left:${rand(0,100)}vw;animation-duration:${9+rand(0,14)}s;animation-delay:-${rand(0,18)}s;`;
+  document.body.appendChild(el);
+}
+
+/* ══════════════════════════════════════
+   SHAPE OBJECTS
+══════════════════════════════════════ */
+const NUM_SHAPES = 10;
+let found = 0;
+const shapes = [];
+
+function applyShapeStyle(el, shapeObj) {
+  const s = shapeObj;
+  el.style.background    = s.grad;
+  el.style.borderRadius  = s.type.br || '';
+  el.style.clipPath      = s.type.cp || '';
+  el.style.boxShadow     = '0 8px 28px rgba(0,0,0,.35)';
+  el.style.fontSize      = '0';
+}
+
+function makeShape(idx) {
+  const type   = pick(SHAPES);
+  const grad   = GRADS[idx % GRADS.length];
+  const size   = rInt(82, 112);
+  const angle  = Math.random() * Math.PI * 2;
+  const speed  = rand(0.9, 2.1);
+
+  const el = document.createElement('div');
+  el.className = 'shape';
+  el.style.width  = size + 'px';
+  el.style.height = size + 'px';
+  applyShapeStyle(el, { grad, type });
+  document.body.appendChild(el);
+
+  const s = {
+    el, type, grad, size,
+    x: rand(size, W - size),
+    y: rand(size + 60, H - size),
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    rot: rand(0, 360),
+    rotSpeed: (rand(0.8, 2.2)) * (Math.random() > .5 ? 1 : -1),
+    frozen: false,
+  };
+
+  const handler = e => { e.preventDefault(); onTap(s); };
+  el.addEventListener('click',      handler);
+  el.addEventListener('touchstart', handler, { passive: false });
+
+  return s;
+}
+
+/* ══════════════════════════════════════
+   GAME LOOP
+══════════════════════════════════════ */
+function tick() {
+  shapes.forEach(s => {
+    if (s.frozen) return;
+
+    s.x += s.vx;  s.y += s.vy;  s.rot += s.rotSpeed;
+
+    if (s.x < 0)          { s.x = 0;          s.vx =  Math.abs(s.vx); }
+    if (s.x + s.size > W) { s.x = W - s.size; s.vx = -Math.abs(s.vx); }
+    if (s.y < 60)         { s.y = 60;          s.vy =  Math.abs(s.vy); }
+    if (s.y + s.size > H) { s.y = H - s.size; s.vy = -Math.abs(s.vy); }
+
+    s.el.style.left      = s.x + 'px';
+    s.el.style.top       = s.y + 'px';
+    s.el.style.transform = `rotate(${s.rot}deg)`;
+  });
+  requestAnimationFrame(tick);
+}
+
+/* ══════════════════════════════════════
+   TAP HANDLER
+══════════════════════════════════════ */
+function onTap(s) {
+  if (s.frozen) return;
+  s.frozen = true;
+
+  // Dismiss hint on first tap
+  document.getElementById('hint').classList.add('hidden');
+
+  const animal = pick(ANIMALS);
+
+  // Clear inline transform so CSS anim takes over
+  s.el.style.transform = '';
+
+  // 1) Spin shape away
+  s.el.classList.add('anim-out');
+  s.el.addEventListener('animationend', () => {
+    s.el.classList.remove('anim-out');
+
+    // 2) Switch to animal
+    s.el.textContent = animal.emoji;
+    s.el.classList.add('is-animal', 'anim-animal');
+
+    playSound(animal);
+    burst(s);
+    showBanner(animal.emoji + '  ' + animal.name + '!');
+
+    found++;
+    document.getElementById('count').textContent = found;
+
+    // 3) After display time, revert
+    setTimeout(() => revert(s, animal), 2400);
+
+  }, { once: true });
+}
+
+function revert(s) {
+  s.el.classList.remove('anim-animal');
+  s.el.classList.add('anim-out2');
+  s.el.addEventListener('animationend', () => {
+    s.el.classList.remove('anim-out2', 'is-animal');
+    s.el.textContent = '';
+    applyShapeStyle(s.el, s);
+
+    s.el.classList.add('anim-return');
+    s.el.addEventListener('animationend', () => {
+      s.el.classList.remove('anim-return');
+      s.frozen = false;   // resume bouncing
+    }, { once: true });
+
+  }, { once: true });
+}
+
+/* ══════════════════════════════════════
+   SOUND — Web Speech API
+══════════════════════════════════════ */
+function playSound(animal) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u      = new SpeechSynthesisUtterance(animal.sound);
+  u.pitch      = animal.pitch;
+  u.rate       = animal.rate;
+  u.volume     = 1;
+  const go = () => {
+    const v = speechSynthesis.getVoices().find(v => v.lang === 'en-US')
+           || speechSynthesis.getVoices().find(v => v.lang.startsWith('en'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+  speechSynthesis.getVoices().length ? go() : (speechSynthesis.onvoiceschanged = go);
+}
+
+/* ══════════════════════════════════════
+   SPARKLE BURST
+══════════════════════════════════════ */
+function burst(s) {
+  const cx = s.x + s.size / 2;
+  const cy = s.y + s.size / 2;
+  const n  = 9;
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2;
+    const dist  = 55 + Math.random() * 65;
+    const el    = document.createElement('div');
+    el.className   = 'spark';
+    el.textContent = pick(SPARKS);
+    el.style.cssText = `left:${cx}px;top:${cy}px;--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;animation-delay:${i*18}ms;`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+}
+
+/* ══════════════════════════════════════
+   BANNER
+══════════════════════════════════════ */
+let bannerTimer;
+function showBanner(text) {
+  const el = document.getElementById('banner');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+for (let i = 0; i < NUM_SHAPES; i++) shapes.push(makeShape(i));
+tick();
+</script>
+</body>
+</html>

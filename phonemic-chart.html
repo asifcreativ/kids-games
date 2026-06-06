@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Phonemic Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --vowel-bg:    #f0f4ff;
+      --cons-bg:     #fefce8;
+      --active:      #4f46e5;
+      --active-light:#eef2ff;
+      --voiced:      #1e293b;
+      --unvoiced:    #94a3b8;
+      --border:      #e2e8f0;
+      --radius:      12px;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 860px;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #1e293b;
+    }
+    .sub {
+      font-size: .95rem;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    /* ── Tip panel ── */
+    #tip-panel {
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+      max-width: 860px;
+      margin: 0 auto 22px;
+      background: #fff;
+      border: 2px solid var(--active);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: none;
+      gap: 16px;
+      align-items: center;
+      box-shadow: 0 4px 24px rgba(79,70,229,.15);
+      animation: slideDown .25s ease;
+    }
+    #tip-panel.visible { display: flex; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .tip-sym {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--active);
+      min-width: 64px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .tip-body { flex: 1; }
+
+    .tip-word {
+      font-size: .8rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 3px;
+    }
+
+    .tip-word span {
+      color: var(--active);
+      font-size: .95rem;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .tip-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.4;
+    }
+
+    .tip-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .repeat-btn {
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 800;
+      background: var(--active);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: opacity .15s;
+      white-space: nowrap;
+    }
+    .repeat-btn:hover { opacity: .85; }
+
+    /* ── Main layout ── */
+    .chart { max-width: 860px; margin: 0 auto; }
+
+    /* ── Section ── */
+    .section {
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .section-header {
+      padding: 10px 16px;
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #64748b;
+      background: #f1f5f9;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-body { background: #fff; }
+
+    .sub-section {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sub-section:last-child { border-bottom: none; }
+
+    .sub-label {
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    /* ── Phoneme grid ── */
+    .ph-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* ── Phoneme cell ── */
+    .ph-cell {
+      width: 80px;
+      height: 76px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, transform .12s;
+      background: #fff;
+      position: relative;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ph-cell:hover {
+      border-color: #a5b4fc;
+      background: var(--active-light);
+      transform: translateY(-2px);
+    }
+
+    .ph-cell.active {
+      border-color: var(--active);
+      background: var(--active-light);
+    }
+
+    /* vowel cells */
+    .vowels-section .ph-cell { background: var(--vowel-bg); border-color: #c7d2fe; }
+    .vowels-section .ph-cell:hover  { background: #e0e7ff; border-color: var(--active); }
+    .vowels-section .ph-cell.active { background: #e0e7ff; border-color: var(--active); }
+
+    /* consonant cells */
+    .cons-section .ph-cell { background: var(--cons-bg); border-color: #fde68a; }
+    .cons-section .ph-cell:hover  { background: #fef08a; border-color: #eab308; }
+    .cons-section .ph-cell.active { background: #fef08a; border-color: #eab308; box-shadow: 0 0 0 2px rgba(234,179,8,.35); }
+
+    @keyframes cellPop {
+      0%  { transform: scale(1); }
+      35% { transform: scale(.88); }
+      70% { transform: scale(1.08); }
+      100%{ transform: scale(1); }
+    }
+    .ph-cell.popping { animation: cellPop .3s ease; }
+
+    .cell-sym {
+      font-size: 1.65rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .cell-word {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    /* voiced = dark, unvoiced = muted */
+    .voiced   .cell-sym  { color: var(--voiced); }
+    .voiced   .cell-word { color: #64748b; }
+    .unvoiced .cell-sym  { color: var(--unvoiced); }
+    .unvoiced .cell-word { color: #cbd5e1; }
+
+    /* voiced/unvoiced badge dot */
+    .ph-cell::after {
+      content: '';
+      position: absolute;
+      top: 6px; right: 7px;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+    }
+    .voiced::after   { background: #22c55e; }
+    .unvoiced::after { background: #e2e8f0; }
+
+    /* speaking pulse */
+    @keyframes speakRing {
+      0%   { box-shadow: 0 0 0 0   rgba(79,70,229,.55); }
+      70%  { box-shadow: 0 0 0 8px rgba(79,70,229,0); }
+      100% { box-shadow: 0 0 0 0   rgba(79,70,229,0); }
+    }
+    .ph-cell.speaking { animation: speakRing .8s ease infinite; }
+
+    /* ── Legend ── */
+    .legend {
+      max-width: 860px;
+      margin: 0 auto 16px;
+      display: flex;
+      gap: 18px;
+      font-size: .8rem;
+      font-weight: 700;
+      color: #64748b;
+      flex-wrap: wrap;
+    }
+    .leg-item { display: flex; align-items: center; gap: 5px; }
+    .leg-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── No speech warning ── */
+    #no-speech {
+      display: none;
+      max-width: 860px;
+      margin: 0 auto 16px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: .9rem;
+      color: #9a3412;
+      font-weight: 700;
+    }
+
+    @media (max-width: 520px) {
+      .ph-cell { width: 68px; height: 66px; }
+      .cell-sym { font-size: 1.4rem; }
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗣️ English Phonemic Chart</h1>
+  <p class="sub">Click any symbol — hear the sound, read the mouth tip, and practice.</p>
+</header>
+
+<div id="no-speech">Your browser doesn't support Web Speech. Try Chrome or Safari.</div>
+
+<!-- Sticky tip panel -->
+<div id="tip-panel">
+  <div class="tip-sym" id="tip-sym">iː</div>
+  <div class="tip-body">
+    <div class="tip-word">Example word: <span id="tip-word">sheep</span></div>
+    <div class="tip-text" id="tip-text">Tip goes here.</div>
+  </div>
+  <div class="tip-actions">
+    <button class="repeat-btn" onclick="repeatCurrent()">🔊 Repeat</button>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Voiced</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#e2e8f0; border:1px solid #cbd5e1"></div>Unvoiced</div>
+</div>
+
+<div class="chart">
+
+  <!-- ══ VOWELS ══ -->
+  <div class="section vowels-section">
+    <div class="section-header">🔵 Vowels (20)</div>
+    <div class="section-body">
+      <div class="sub-section">
+        <div class="sub-label">Monophthongs — pure single sounds</div>
+        <div class="ph-grid" id="mono-grid"></div>
+      </div>
+      <div class="sub-section">
+        <div class="sub-label">Diphthongs — gliding sounds</div>
+        <div class="ph-grid" id="diph-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONSONANTS ══ -->
+  <div class="section cons-section">
+    <div class="section-header">🟡 Consonants (24)</div>
+    <div class="section-body">
+      <div class="sub-section">
+        <div class="sub-label">Plosives &amp; Affricates</div>
+        <div class="ph-grid" id="cons-grid-1"></div>
+      </div>
+      <div class="sub-section">
+        <div class="sub-label">Fricatives</div>
+        <div class="ph-grid" id="cons-grid-2"></div>
+      </div>
+      <div class="sub-section">
+        <div class="sub-label">Nasals, Liquids &amp; Glides</div>
+        <div class="ph-grid" id="cons-grid-3"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   PHONEME DATA
+   speak: text passed to speechSynthesis
+   tip:   mouth/tongue instruction
+════════════════════════════════════════ */
+const MONO = [
+  { sym:'iː', word:'sheep',   speak:'ee',  voiced:true,  tip:'Smile wide — tongue high and forward, close to top teeth.' },
+  { sym:'ɪ',  word:'ship',    speak:'ih',  voiced:true,  tip:'Relaxed smile — tongue slightly lower and more central than iː.' },
+  { sym:'ʊ',  word:'good',    speak:'uh',  voiced:true,  tip:'Lips lightly rounded — tongue high and back, loosely.' },
+  { sym:'uː', word:'shoot',   speak:'oo',  voiced:true,  tip:'Lips rounded and pushed forward — tongue high and back, tense.' },
+  { sym:'e',  word:'bed',     speak:'eh',  voiced:true,  tip:'Mouth half open — tongue at mid-front, lips spread.' },
+  { sym:'ə',  word:'teacher', speak:'uh',  voiced:true,  tip:'Fully relaxed and neutral — this is the schwa, the most common English vowel.' },
+  { sym:'ɜː', word:'bird',    speak:'er',  voiced:true,  tip:'🇺🇸 American r-colored vowel: curl tongue back slightly — lips not rounded.' },
+  { sym:'ɔː', word:'door',    speak:'aw',  voiced:true,  tip:'Lips rounded and open wide — tongue low and back.' },
+  { sym:'æ',  word:'cat',     speak:'a',   voiced:true,  tip:'Jaw drops low — lips spread wide — tongue flat and low at front.' },
+  { sym:'ʌ',  word:'cup',     speak:'uh',  voiced:true,  tip:'Jaw slightly open — tongue low and central — lips neutral.' },
+  { sym:'ɑː', word:'far',     speak:'ah',  voiced:true,  tip:'Mouth open wide — tongue low and back — no lip rounding.' },
+  { sym:'ɒ',  word:'on',      speak:'o',   voiced:true,  tip:'Open wide — lips very lightly rounded — tongue low and back.' },
+];
+
+const DIPH = [
+  { sym:'ɪə', word:'here',    speak:'ear', voiced:true,  tip:'Glide: start at ɪ (high front) → relax to ə (center). "i" then relax.' },
+  { sym:'eɪ', word:'wait',    speak:'ay',  voiced:true,  tip:'Glide: start at e (mid) → rise to ɪ (high). Mouth closes as you speak.' },
+  { sym:'ʊə', word:'tourist', speak:'ewer',voiced:true,  tip:'Glide: start at ʊ (rounded) → relax to ə. Lips un-round as you move.' },
+  { sym:'ɔɪ', word:'boy',     speak:'oy',  voiced:true,  tip:'Glide: start at ɔ (rounded, low) → rise to ɪ. Lips spread at end.' },
+  { sym:'əʊ', word:'show',    speak:'oh',  voiced:true,  tip:'🇺🇸 Glide: start at ə → round lips toward ʊ. Lips round as you speak.' },
+  { sym:'eə', word:'hair',    speak:'air', voiced:true,  tip:'Glide: start at e (mid front) → open to ə. Jaw drops slightly.' },
+  { sym:'aɪ', word:'my',      speak:'eye', voiced:true,  tip:'Glide: start open at ɑ → tongue rises to ɪ. Wide open then closes.' },
+  { sym:'aʊ', word:'cow',     speak:'ow',  voiced:true,  tip:'Glide: start open at ɑ → lips round toward ʊ. Wide open then round.' },
+];
+
+const CONS_1 = [  // plosives + affricates
+  { sym:'p',  word:'pea',     speak:'p',   voiced:false, tip:'Lips press together — release with a short puff of air. No voice.' },
+  { sym:'b',  word:'boat',    speak:'b',   voiced:true,  tip:'Lips press together — release with voice. Feel your throat vibrate.' },
+  { sym:'t',  word:'tea',     speak:'t',   voiced:false, tip:'Tongue tip at tooth ridge — release air sharply. No voice.' },
+  { sym:'d',  word:'dog',     speak:'d',   voiced:true,  tip:'Tongue tip at tooth ridge — release with voice. Throat vibrates.' },
+  { sym:'tʃ', word:'cheese',  speak:'ch',  voiced:false, tip:'Tongue at roof, then release into a "sh". No voice — like "choo".' },
+  { sym:'dʒ', word:'June',    speak:'j',   voiced:true,  tip:'Tongue at roof, release into voiced "zh". Like "ch" but voiced.' },
+  { sym:'k',  word:'car',     speak:'k',   voiced:false, tip:'Back of tongue presses soft palate — release air sharply. No voice.' },
+  { sym:'g',  word:'go',      speak:'g',   voiced:true,  tip:'Back of tongue presses soft palate — release with voice.' },
+];
+
+const CONS_2 = [  // fricatives
+  { sym:'f',  word:'fly',      speak:'f',   voiced:false, tip:'Upper teeth rest lightly on lower lip — blow air steadily through.' },
+  { sym:'v',  word:'video',    speak:'v',   voiced:true,  tip:'Same position as f — upper teeth on lower lip — but add voice.' },
+  { sym:'θ',  word:'think',    speak:'th',  voiced:false, tip:'Tongue tip between teeth (or near them) — blow air gently. Unvoiced.' },
+  { sym:'ð',  word:'this',     speak:'the', voiced:true,  tip:'Tongue tip between teeth — same as θ — but add voice. Throat vibrates.' },
+  { sym:'s',  word:'see',      speak:'s',   voiced:false, tip:'Tongue near tooth ridge — air flows through a narrow channel. Hissing.' },
+  { sym:'z',  word:'zoo',      speak:'z',   voiced:true,  tip:'Same position as s — but add voice. Feel the buzzing in your throat.' },
+  { sym:'ʃ',  word:'shall',    speak:'sh',  voiced:false, tip:'Lips slightly forward, tongue behind ridge — sustained "sh". No voice.' },
+  { sym:'ʒ',  word:'measure',  speak:'si',  voiced:true,  tip:'Same as ʃ but voiced. The "s" in "measure" or "vision".' },
+];
+
+const CONS_3 = [  // nasals, liquids, glides
+  { sym:'m',  word:'man',  speak:'m',   voiced:true,  tip:'Lips pressed — voice hums out through the nose.' },
+  { sym:'n',  word:'now',  speak:'n',   voiced:true,  tip:'Tongue tip at tooth ridge — voice hums out through the nose.' },
+  { sym:'ŋ',  word:'sing', speak:'ng',  voiced:true,  tip:'Back of tongue at soft palate — hum through nose. No lip/tongue release.' },
+  { sym:'h',  word:'hat',  speak:'h',   voiced:false, tip:'Open throat, open mouth — just breathe out. No constriction.' },
+  { sym:'l',  word:'love', speak:'l',   voiced:true,  tip:'Tongue tip at tooth ridge — voice flows around the sides of tongue.' },
+  { sym:'r',  word:'red',  speak:'r',   voiced:true,  tip:'🇺🇸 American r: curl tongue back — tip does NOT touch the roof. Unique!' },
+  { sym:'w',  word:'wet',  speak:'w',   voiced:true,  tip:'Start with rounded, tense lips — then glide them open as you speak.' },
+  { sym:'j',  word:'yes',  speak:'y',   voiced:true,  tip:'Tongue near front of roof — glide down and open. Like "y" in "yes".' },
+];
+
+/* ════════════════════════════════════════
+   SPEECH
+════════════════════════════════════════ */
+const CAN_SPEAK = 'speechSynthesis' in window;
+if (!CAN_SPEAK) document.getElementById('no-speech').style.display = 'block';
+
+let currentCell = null;
+let currentItem = null;
+
+function getVoice() {
+  const voices = speechSynthesis.getVoices();
+  return (
+    voices.find(v => v.lang === 'en-US' && /female|samantha|zira/i.test(v.name)) ||
+    voices.find(v => v.lang === 'en-US') ||
+    voices.find(v => v.lang.startsWith('en')) ||
+    null
+  );
+}
+
+function speak(text) {
+  if (!CAN_SPEAK) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate   = 0.68;
+  u.pitch  = 1.05;
+  u.volume = 1;
+  const setVoice = () => {
+    const v = getVoice();
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+  if (speechSynthesis.getVoices().length) setVoice();
+  else speechSynthesis.onvoiceschanged = setVoice;
+}
+
+function repeatCurrent() {
+  if (currentItem) speak(currentItem.speak);
+}
+
+/* ════════════════════════════════════════
+   CELL CLICK
+════════════════════════════════════════ */
+function onCellClick(cell, item) {
+  // Deactivate previous
+  if (currentCell) {
+    currentCell.classList.remove('active', 'speaking', 'popping');
+  }
+
+  currentCell = cell;
+  currentItem = item;
+
+  // Animate
+  cell.classList.add('active', 'popping', 'speaking');
+  cell.addEventListener('animationend', () => cell.classList.remove('popping'), { once: true });
+  setTimeout(() => cell.classList.remove('speaking'), 2000);
+
+  // Update tip panel
+  document.getElementById('tip-sym').textContent  = item.sym;
+  document.getElementById('tip-word').textContent  = item.word;
+  document.getElementById('tip-text').textContent  = item.tip;
+  const panel = document.getElementById('tip-panel');
+  panel.classList.remove('visible');
+  void panel.offsetWidth;
+  panel.classList.add('visible');
+
+  // Speak
+  speak(item.speak);
+}
+
+/* ════════════════════════════════════════
+   BUILD GRIDS
+════════════════════════════════════════ */
+function makeCell(item) {
+  const d = document.createElement('div');
+  d.className = `ph-cell ${item.voiced ? 'voiced' : 'unvoiced'}`;
+  d.innerHTML = `
+    <div class="cell-sym">${item.sym}</div>
+    <div class="cell-word">${item.word}</div>
+  `;
+
+  let last = 0;
+  const handler = e => {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - last < 300) return;
+    last = now;
+    onCellClick(d, item);
+  };
+  d.addEventListener('click',      handler);
+  d.addEventListener('touchstart', handler, { passive: false });
+  return d;
+}
+
+function fill(gridId, items) {
+  const g = document.getElementById(gridId);
+  items.forEach(it => g.appendChild(makeCell(it)));
+}
+
+fill('mono-grid',   MONO);
+fill('diph-grid',   DIPH);
+fill('cons-grid-1', CONS_1);
+fill('cons-grid-2', CONS_2);
+fill('cons-grid-3', CONS_3);
+</script>
+</body>
+</html>

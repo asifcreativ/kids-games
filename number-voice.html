@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number Fun! 🔢</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ══ Reset ══ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ══ Body / starfield background ══ */
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      background: #0f0c29;
+      background-image:
+        radial-gradient(ellipse at 15% 60%, rgba(138, 43, 226, .25) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(255, 80, 80, .15)  0%, transparent 45%),
+        radial-gradient(ellipse at 50% 90%, rgba(0, 180, 255, .12)  0%, transparent 50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 52px;
+      overflow-x: hidden;
+    }
+
+    /* ══ Floating star particles (CSS only) ══ */
+    .star {
+      position: fixed;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      animation: riseStar linear infinite;
+    }
+    @keyframes riseStar {
+      0%   { transform: translateY(105vh); opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
+      100% { transform: translateY(-5vh);  opacity: 0; }
+    }
+
+    /* ══ Header ══ */
+    .header { text-align: center; margin-bottom: 20px; }
+
+    h1 {
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(255, 210, 80, .9), 0 5px 0 rgba(0,0,0,.4);
+      line-height: 1.1;
+      margin-bottom: .3rem;
+    }
+
+    .header-sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,.65);
+      font-weight: 700;
+    }
+
+    /* ══ Settings bar ══ */
+    .settings {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 50px;
+      padding: 11px 26px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .settings label {
+      color: rgba(255,255,255,.9);
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .settings select {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 900;
+      border: none;
+      border-radius: 12px;
+      padding: 7px 14px;
+      background: rgba(255,255,255,.92);
+      color: #0f0c29;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ══ Number grid ══ */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 18px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    @media (max-width: 400px) {
+      #grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    }
+
+    /* ══ Number card ══ */
+    .card {
+      position: relative;
+      border-radius: 26px;
+      padding: 22px 14px 18px;
+      min-height: 165px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      user-select: none;
+      touch-action: manipulation;
+      /* 3-layer shadow: depth + glow + inset shine */
+      box-shadow:
+        0 10px 36px rgba(0,0,0,.45),
+        0 0 0 0 rgba(255,255,255,0),
+        inset 0 1px 0 rgba(255,255,255,.25);
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* glossy top shine */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      top: 0;
+      height: 48%;
+      background: linear-gradient(to bottom, rgba(255,255,255,.22), transparent);
+      border-radius: 26px 26px 0 0;
+      pointer-events: none;
+    }
+
+    /* shimmer sweep on hover */
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
+      transform: translateX(-100%);
+      pointer-events: none;
+      transition: transform .4s ease;
+    }
+    .card:hover::after { transform: translateX(100%); }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow:
+        0 20px 56px rgba(0,0,0,.55),
+        0 0 0 3px rgba(255,255,255,.25),
+        inset 0 1px 0 rgba(255,255,255,.3);
+    }
+
+    /* ══ Card internals ══ */
+    .card-deco {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 1.5rem;
+      opacity: .85;
+      line-height: 1;
+    }
+
+    .speak-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity .2s;
+      animation: none;
+    }
+
+    .card.talking .speak-badge {
+      opacity: 1;
+      animation: badgePulse .55s ease-in-out infinite alternate;
+    }
+
+    @keyframes badgePulse {
+      from { transform: scale(1);    filter: drop-shadow(0 0 4px rgba(255,255,255,.4)); }
+      to   { transform: scale(1.35); filter: drop-shadow(0 0 10px rgba(255,255,255,.9)); }
+    }
+
+    .card-num {
+      font-size: 5rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 5px 14px rgba(0,0,0,.35);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .card-word {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: rgba(255,255,255,.82);
+      letter-spacing: .05em;
+    }
+
+    /* speaking glow ring on card border */
+    .card.talking {
+      box-shadow:
+        0 20px 56px rgba(0,0,0,.55),
+        0 0 0 4px rgba(255,255,255,.7),
+        inset 0 1px 0 rgba(255,255,255,.3);
+    }
+
+    /* ══ Click animations ══ */
+    @keyframes cardPop {
+      0%   { transform: scale(1); }
+      22%  { transform: scale(.87) rotate(-2.5deg); }
+      55%  { transform: scale(1.16) rotate(2deg); }
+      78%  { transform: scale(.97); }
+      100% { transform: scale(1); }
+    }
+    .card.popping { animation: cardPop .46s cubic-bezier(.36,.07,.19,.97) both; }
+
+    /* expanding ring overlay */
+    .ring {
+      position: absolute;
+      inset: 0;
+      border: 4px solid rgba(255,255,255,.75);
+      border-radius: 26px;
+      pointer-events: none;
+      animation: ringExpand .55s ease-out forwards;
+    }
+    @keyframes ringExpand {
+      from { transform: scale(.6); opacity: 1; }
+      to   { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* ══ Sparkle burst ══ */
+    .sparkle {
+      position: fixed;
+      font-size: 1.5rem;
+      pointer-events: none;
+      z-index: 9999;
+      animation: sparkleFly .75s cubic-bezier(.2,.8,.4,1) forwards;
+    }
+    @keyframes sparkleFly {
+      from { transform: translate(0,0) scale(1.2); opacity: 1; }
+      to   { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ══ No-speech warning ══ */
+    .no-speech-warn {
+      background: rgba(255,100,80,.15);
+      border: 1px solid rgba(255,100,80,.4);
+      border-radius: 12px;
+      color: rgba(255,200,180,.9);
+      font-size: .9rem;
+      font-weight: 700;
+      padding: 8px 18px;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔢 Number Fun!</h1>
+  <p class="header-sub">Tap any number — hear it speak! 🔊</p>
+</div>
+
+<div id="no-speech-warn" class="no-speech-warn" style="display:none">
+  Your browser doesn't support voice. Numbers will still animate!
+</div>
+
+<div class="settings">
+  <label for="count-sel">Count to:</label>
+  <select id="count-sel" onchange="buildGrid()">
+    <option value="5">5</option>
+    <option value="10" selected>10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+  </select>
+</div>
+
+<div id="grid"></div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const NAMES = [
+  '', 'One','Two','Three','Four','Five',
+  'Six','Seven','Eight','Nine','Ten',
+  'Eleven','Twelve','Thirteen','Fourteen','Fifteen',
+  'Sixteen','Seventeen','Eighteen','Nineteen','Twenty'
+];
+
+// Unique vibrant gradient per number (cycles)
+const GRADS = [
+  'linear-gradient(145deg, #FF416C, #FF4B2B)',   //  1 — fire red
+  'linear-gradient(145deg, #FF8008, #FFC837)',   //  2 — amber
+  'linear-gradient(145deg, #F9D423, #F83600)',   //  3 — solar
+  'linear-gradient(145deg, #11998e, #38ef7d)',   //  4 — emerald
+  'linear-gradient(145deg, #1e90ff, #00c6ff)',   //  5 — sky
+  'linear-gradient(145deg, #4776E6, #8E54E9)',   //  6 — indigo
+  'linear-gradient(145deg, #CC00FF, #9733EE)',   //  7 — violet
+  'linear-gradient(145deg, #ee0979, #ff6a00)',   //  8 — magenta
+  'linear-gradient(145deg, #1CB5E0, #000046)',   //  9 — deep ocean
+  'linear-gradient(145deg, #F7971E, #FFD200)',   // 10 — gold ✨
+  'linear-gradient(145deg, #43cea2, #185a9d)',   // 11 — teal-blue
+  'linear-gradient(145deg, #c94b4b, #4b134f)',   // 12 — ruby
+  'linear-gradient(145deg, #f953c6, #b91d73)',   // 13 — hot pink
+  'linear-gradient(145deg, #56ab2f, #a8e063)',   // 14 — lime
+  'linear-gradient(145deg, #00B4DB, #0083B0)',   // 15 — aqua
+  'linear-gradient(145deg, #fd746c, #ff9068)',   // 16 — salmon
+  'linear-gradient(145deg, #834d9b, #d04ed6)',   // 17 — lavender
+  'linear-gradient(145deg, #e1eec3, #f05053)',   // 18 — peach
+  'linear-gradient(145deg, #1D976C, #93F9B9)',   // 19 — mint
+  'linear-gradient(145deg, #f7971e, #ffd200)',   // 20 — gold (same as 10)
+];
+
+const DECOS = [
+  '☀️','🌙','⭐','🌈','🦋','🎈','🌸','🍎','🎵','🎉',
+  '🦄','🌺','🍦','🚀','🐬','🦁','🌻','🐝','🎨','🏆',
+];
+
+const SPARKS = ['⭐','✨','🌟','💫','🎊','🎉','🎈','💥'];
+
+/* ══════════════════════════════════════
+   STAR BACKGROUND
+══════════════════════════════════════ */
+(function spawnStars() {
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const sz = 1.5 + Math.random() * 3.5;
+    el.style.cssText = `
+      width:${sz}px; height:${sz}px;
+      left:${Math.random() * 100}vw;
+      opacity:${.3 + Math.random() * .7};
+      animation-duration:${9 + Math.random() * 14}s;
+      animation-delay:-${Math.random() * 18}s;
+    `;
+    document.body.appendChild(el);
+  }
+})();
+
+/* ══════════════════════════════════════
+   SPEECH
+══════════════════════════════════════ */
+const CAN_SPEAK = 'speechSynthesis' in window;
+if (!CAN_SPEAK) document.getElementById('no-speech-warn').style.display = 'block';
+
+let talkingCard = null;
+
+function speak(text, card) {
+  if (!CAN_SPEAK) return;
+  window.speechSynthesis.cancel();
+
+  if (talkingCard) { talkingCard.classList.remove('talking'); }
+  talkingCard = card;
+  card.classList.add('talking');
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate   = 0.72;
+  utter.pitch  = 1.2;
+  utter.volume = 1;
+  utter.onend = () => {
+    card.classList.remove('talking');
+    if (talkingCard === card) talkingCard = null;
+  };
+  // Workaround: some browsers silently fail if voices aren't loaded yet
+  const go = () => window.speechSynthesis.speak(utter);
+  if (window.speechSynthesis.getVoices().length) go();
+  else window.speechSynthesis.onvoiceschanged = go;
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════ */
+function popCard(card) {
+  card.classList.remove('popping');
+  void card.offsetWidth;   // force reflow to restart animation
+  card.classList.add('popping');
+  card.addEventListener('animationend', () => card.classList.remove('popping'), { once: true });
+
+  // Expanding ring
+  const ring = document.createElement('div');
+  ring.className = 'ring';
+  card.appendChild(ring);
+  setTimeout(() => ring.remove(), 600);
+}
+
+function burstSparkles(card) {
+  const rect = card.getBoundingClientRect();
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+
+  const count = 8 + ~~(Math.random() * 4);
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const dist  = 65 + Math.random() * 70;
+    const tx    = Math.cos(angle) * dist;
+    const ty    = Math.sin(angle) * dist;
+
+    const el = document.createElement('div');
+    el.className   = 'sparkle';
+    el.textContent = SPARKS[~~(Math.random() * SPARKS.length)];
+    el.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      --tx:${tx}px; --ty:${ty}px;
+      animation-delay:${i * 18}ms;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+}
+
+/* ══════════════════════════════════════
+   TAP HANDLER
+══════════════════════════════════════ */
+function onTap(card, n) {
+  speak(NAMES[n] || String(n), card);
+  popCard(card);
+  burstSparkles(card);
+}
+
+/* ══════════════════════════════════════
+   BUILD GRID
+══════════════════════════════════════ */
+function buildGrid() {
+  const count = parseInt(document.getElementById('count-sel').value);
+  const grid  = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  for (let n = 1; n <= count; n++) {
+    const idx  = (n - 1) % GRADS.length;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.background = GRADS[idx];
+
+    card.innerHTML = `
+      <span class="speak-badge">🔊</span>
+      <span class="card-deco">${DECOS[(n-1) % DECOS.length]}</span>
+      <div  class="card-num">${n}</div>
+      <div  class="card-word">${NAMES[n] || n}</div>
+    `;
+
+    // Prevent double-fire on mobile (touchstart + click)
+    let lastTap = 0;
+    const handler = (e) => {
+      e.preventDefault();
+      const now = Date.now();
+      if (now - lastTap < 350) return;
+      lastTap = now;
+      onTap(card, n);
+    };
+
+    card.addEventListener('click',      handler);
+    card.addEventListener('touchstart', handler, { passive: false });
+
+    grid.appendChild(card);
+  }
+}
+
+buildGrid();
+</script>
+</body>
+</html>

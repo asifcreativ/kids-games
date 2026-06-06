@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe 🎮</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; text-align: center; animation: fadeUp 0.45s ease; }
+    .screen.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 2.8rem;
+      color: #fff;
+      text-shadow: 0 3px 8px rgba(0,0,0,.25);
+      margin-bottom: .4rem;
+    }
+    .subtitle {
+      color: rgba(255,255,255,.85);
+      font-size: 1.1rem;
+      margin-bottom: 1.4rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 13px 30px;
+      margin: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background: #fff;
+      color: #764ba2;
+      box-shadow: 0 5px 18px rgba(0,0,0,.18);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: #fff;
+    }
+
+    /* ── Avatar picker ── */
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      max-width: 360px;
+      margin: 0 auto 1.2rem;
+      padding: 4px;
+    }
+    .av {
+      font-size: 2.2rem;
+      background: #fff;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform .18s, border-color .18s, background .18s;
+      line-height: 1;
+    }
+    .av:hover:not(.av-disabled)  { transform: scale(1.18); border-color: #f093fb; }
+    .av.av-selected               { border-color: #f5576c; background: #ffe3ee; transform: scale(1.1); }
+    .av.av-disabled               { opacity: .28; cursor: not-allowed; }
+
+    /* ── Players bar ── */
+    .players-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin: 12px 0;
+    }
+    .vs { color: #fff; font-size: 1.3rem; font-weight: 700; }
+    .player-chip {
+      background: #fff;
+      border-radius: 50px;
+      padding: 9px 20px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      opacity: .55;
+      transition: opacity .25s, transform .25s, box-shadow .25s;
+      box-shadow: 0 3px 10px rgba(0,0,0,.12);
+    }
+    .player-chip.chip-active {
+      opacity: 1;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,.22);
+    }
+    .chip-name { font-weight: 700; color: #764ba2; }
+
+    /* ── Board ── */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 370px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .cell {
+      width: 106px;
+      height: 106px;
+      background: #fff;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      cursor: pointer;
+      border: 3px solid transparent;
+      box-shadow: 0 5px 18px rgba(0,0,0,.15);
+      transition: transform .15s, background .15s, box-shadow .15s;
+      position: relative;
+      user-select: none;
+    }
+    .cell:not(.cell-taken):hover {
+      transform: scale(1.06);
+      background: #f8f5ff;
+    }
+    .cell.cell-taken  { cursor: not-allowed; }
+    .cell.cell-p1     { border-color: #f5576c; background: linear-gradient(135deg,#fff5f7,#fff); }
+    .cell.cell-p2     { border-color: #4facfe; background: linear-gradient(135deg,#f3f8ff,#fff); }
+    .cell.cell-win {
+      animation: winPulse .55s ease-in-out infinite alternate;
+      border-color: #f9ca24 !important;
+    }
+    @keyframes winPulse {
+      from { transform: scale(1);    box-shadow: 0 5px 18px rgba(0,0,0,.15); }
+      to   { transform: scale(1.1);  box-shadow: 0 10px 30px rgba(249,202,36,.55); }
+    }
+
+    @keyframes popIn {
+      0%   { transform: scale(0) rotate(-12deg); }
+      65%  { transform: scale(1.2) rotate(5deg); }
+      100% { transform: scale(1)   rotate(0deg); }
+    }
+    .cell-pop { animation: popIn .32s cubic-bezier(.36,.07,.19,.97); }
+
+    /* hover ghost */
+    .cell:not(.cell-taken)::after {
+      content: attr(data-ghost);
+      position: absolute;
+      font-size: 3rem;
+      opacity: 0;
+      transition: opacity .15s;
+      pointer-events: none;
+    }
+    .cell:not(.cell-taken):hover::after { opacity: .22; }
+
+    /* ── Status ── */
+    .status-text {
+      color: #fff;
+      font-size: 1.25rem;
+      min-height: 1.8rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,.2);
+      margin: 8px 0 4px;
+    }
+
+    /* ── Result screen ── */
+    .result-emoji {
+      font-size: 6rem;
+      animation: celebrate .5s ease-in-out infinite alternate;
+      display: block;
+      margin-bottom: .4rem;
+    }
+    @keyframes celebrate {
+      from { transform: scale(1)   rotate(-6deg); }
+      to   { transform: scale(1.2) rotate(6deg); }
+    }
+    .result-heading {
+      font-size: 2.2rem;
+      color: #fff;
+      font-weight: 800;
+      text-shadow: 0 3px 8px rgba(0,0,0,.25);
+      margin-bottom: .4rem;
+    }
+
+    /* ── Confetti ── */
+    .confetti {
+      position: fixed;
+      width: 11px;
+      height: 11px;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+      z-index: 999;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-80px)   rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(105vh)   rotate(700deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Welcome -->
+<div class="screen active" id="s-welcome">
+  <h1>🎮 Tic Tac Toe</h1>
+  <p class="subtitle">Pick your characters and battle it out!</p>
+  <button class="btn btn-primary" onclick="show('s-p1-pick')">Let's Play! 🚀</button>
+</div>
+
+<!-- Player 1 avatar pick -->
+<div class="screen" id="s-p1-pick">
+  <h1>Player 1</h1>
+  <p class="subtitle">Choose your character!</p>
+  <div class="avatar-grid" id="grid-p1"></div>
+  <button class="btn btn-primary" id="btn-p1" onclick="confirmP1()" disabled>Next ➡️</button>
+</div>
+
+<!-- Player 2 avatar pick -->
+<div class="screen" id="s-p2-pick">
+  <h1>Player 2</h1>
+  <p class="subtitle">Pick a different character!</p>
+  <div class="avatar-grid" id="grid-p2"></div>
+  <button class="btn btn-primary" id="btn-p2" onclick="startGame()" disabled>Let's Go! 🎯</button>
+</div>
+
+<!-- Game -->
+<div class="screen" id="s-game">
+  <h1 style="font-size:2rem; margin-bottom:.2rem;">Tic Tac Toe</h1>
+  <div class="players-bar">
+    <div class="player-chip chip-active" id="chip-p1">
+      <span id="chip-p1-icon"></span>
+      <span class="chip-name">Player 1</span>
+    </div>
+    <div class="vs">vs</div>
+    <div class="player-chip" id="chip-p2">
+      <span id="chip-p2-icon"></span>
+      <span class="chip-name">Player 2</span>
+    </div>
+  </div>
+  <div class="board" id="board"></div>
+  <p class="status-text" id="status"></p>
+  <div>
+    <button class="btn" onclick="resetBoard()">🔄 Restart</button>
+    <button class="btn" onclick="show('s-p1-pick'); rebuildGrids()">🎭 New Characters</button>
+    <button class="btn" onclick="show('s-welcome')">🏠 Home</button>
+  </div>
+</div>
+
+<!-- Result -->
+<div class="screen" id="s-result">
+  <span class="result-emoji" id="r-emoji"></span>
+  <div class="result-heading" id="r-heading"></div>
+  <p class="subtitle" id="r-sub"></p>
+  <button class="btn btn-primary" onclick="resetBoard()">Play Again! 🎮</button>
+  <button class="btn" onclick="show('s-p1-pick'); rebuildGrids()">🎭 Change Characters</button>
+  <button class="btn" onclick="show('s-welcome')">🏠 Home</button>
+</div>
+
+<script>
+const AVATARS = ['🐱','🐶','🦊','🐼','🐸','🦄','🐯','🦁','🐨','🐮','🐧','🐺','🐻','🦋','🦖'];
+
+const WINS = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+let p1 = null, p2 = null;
+let board = Array(9).fill(0);
+let turn = 1;
+let live = false;
+
+/* ── Helpers ── */
+const $ = id => document.getElementById(id);
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+/* ── Avatar grids ── */
+function buildGrid(gridId, onPick, exclude = null) {
+  const el = $(gridId);
+  el.innerHTML = '';
+  AVATARS.forEach(av => {
+    const d = document.createElement('div');
+    d.className = 'av' + (av === exclude ? ' av-disabled' : '');
+    d.textContent = av;
+    d.dataset.av = av;
+    if (av !== exclude) d.onclick = () => onPick(av, el, d);
+    el.appendChild(d);
+  });
+}
+
+function rebuildGrids() {
+  p1 = null; p2 = null;
+  $('btn-p1').disabled = true;
+  buildGrid('grid-p1', (av, el, d) => pickAv(av, el, d, 'p1'));
+}
+
+function pickAv(av, gridEl, el, player) {
+  gridEl.querySelectorAll('.av').forEach(a => a.classList.remove('av-selected'));
+  el.classList.add('av-selected');
+  if (player === 'p1') { p1 = av; $('btn-p1').disabled = false; }
+  else                 { p2 = av; $('btn-p2').disabled = false; }
+}
+
+function confirmP1() {
+  if (!p1) return;
+  buildGrid('grid-p2', (av, el, d) => pickAv(av, el, d, 'p2'), p1);
+  p2 = null;
+  $('btn-p2').disabled = true;
+  show('s-p2-pick');
+}
+
+/* ── Game ── */
+function startGame() {
+  if (!p2) return;
+  $('chip-p1-icon').textContent = p1;
+  $('chip-p2-icon').textContent = p2;
+  resetBoard();
+  show('s-game');
+}
+
+function resetBoard() {
+  board = Array(9).fill(0);
+  turn = 1;
+  live = true;
+  renderBoard();
+  updateStatus();
+  show('s-game');
+}
+
+function renderBoard() {
+  const el = $('board');
+  el.innerHTML = '';
+  const ghost = turn === 1 ? p1 : p2;
+  board.forEach((v, i) => {
+    const d = document.createElement('div');
+    d.className = 'cell' + (v ? ` cell-taken cell-p${v}` : '');
+    d.textContent = v === 1 ? p1 : v === 2 ? p2 : '';
+    if (!v) d.dataset.ghost = ghost;
+    if (!v && live) d.onclick = () => move(i);
+    el.appendChild(d);
+  });
+}
+
+function move(i) {
+  if (board[i] || !live) return;
+  board[i] = turn;
+  renderBoard();
+
+  // pop animation on placed cell
+  const cells = $('board').children;
+  cells[i].classList.add('cell-pop');
+
+  const win = checkWin();
+  if (win) {
+    live = false;
+    highlightWin(win);
+    setTimeout(() => showResult('win', turn), 850);
+  } else if (board.every(Boolean)) {
+    live = false;
+    setTimeout(() => showResult('draw'), 850);
+  } else {
+    turn = turn === 1 ? 2 : 1;
+    updateStatus();
+    // update ghost on remaining cells
+    const ghost = turn === 1 ? p1 : p2;
+    [...$('board').children].forEach((c,idx) => { if (!board[idx]) c.dataset.ghost = ghost; });
+  }
+}
+
+function checkWin() {
+  for (const combo of WINS) {
+    const [a,b,c] = combo;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return combo;
+  }
+  return null;
+}
+
+function highlightWin(combo) {
+  const cells = $('board').children;
+  combo.forEach(i => cells[i].classList.add('cell-win'));
+}
+
+function updateStatus() {
+  const icon = turn === 1 ? p1 : p2;
+  $('status').textContent = `${icon} Player ${turn}'s turn!`;
+  $('chip-p1').classList.toggle('chip-active', turn === 1);
+  $('chip-p2').classList.toggle('chip-active', turn === 2);
+}
+
+function showResult(type, winner) {
+  if (type === 'win') {
+    const icon = winner === 1 ? p1 : p2;
+    $('r-emoji').textContent = icon;
+    $('r-heading').textContent = `Player ${winner} Wins! 🎉`;
+    $('r-sub').textContent = "Woohoo! You're a superstar champion!";
+    spawnConfetti();
+  } else {
+    $('r-emoji').textContent = '🤝';
+    $('r-heading').textContent = "It's a Draw!";
+    $('r-sub').textContent = "Great game! Both players played brilliantly!";
+  }
+  show('s-result');
+}
+
+/* ── Confetti ── */
+function spawnConfetti() {
+  const palette = ['#f5576c','#f093fb','#4facfe','#43e97b','#fee140','#a18cd1','#ff9a9e'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        background:${palette[~~(Math.random()*palette.length)]};
+        animation-duration:${1.4+Math.random()*2}s;
+        animation-delay:${Math.random()*.4}s;
+        border-radius:${Math.random()>.5?'50%':'3px'};
+        width:${8+~~(Math.random()*8)}px;
+        height:${8+~~(Math.random()*8)}px;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3200);
+    }, i * 28);
+  }
+}
+
+/* ── Init ── */
+rebuildGrids();
+</script>
+</body>
+</html>
