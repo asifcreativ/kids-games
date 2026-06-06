@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kids Games 🎮</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      background: #0d0b2a;
+      background-image:
+        radial-gradient(ellipse at 20% 55%, rgba(124,92,191,.28) 0%, transparent 52%),
+        radial-gradient(ellipse at 82% 18%, rgba(244,114,182,.14) 0%, transparent 44%),
+        radial-gradient(ellipse at 55% 90%, rgba(0,180,255,.1)   0%, transparent 48%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 44px 20px 64px;
+      overflow-x: hidden;
+    }
+
+    /* ── Stars ── */
+    .star {
+      position: fixed;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      animation: riseStar linear infinite;
+    }
+    @keyframes riseStar {
+      from { transform: translateY(105vh); opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
+      to   { transform: translateY(-5vh);  opacity: 0; }
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 50px; }
+
+    h1 {
+      font-size: clamp(2.6rem, 9vw, 5rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 50px rgba(255,205,80,.85), 0 5px 0 rgba(0,0,0,.3);
+      line-height: 1.05;
+      margin-bottom: .55rem;
+    }
+
+    .sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,.55);
+      font-weight: 700;
+    }
+
+    /* ── Game grid ── */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+      gap: 22px;
+      width: 100%;
+      max-width: 880px;
+    }
+
+    /* ── Card ── */
+    .card {
+      border-radius: 26px;
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;
+    }
+    .card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 22px 54px rgba(0,0,0,.5);
+    }
+
+    .card-body {
+      padding: 30px 24px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* glossy top shine */
+    .card-body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,.2), transparent);
+      pointer-events: none;
+    }
+
+    /* shimmer on hover */
+    .card-body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.15) 50%, transparent 70%);
+      transform: translateX(-100%);
+      pointer-events: none;
+      transition: transform .45s ease;
+    }
+    .card:hover .card-body::after { transform: translateX(100%); }
+
+    .card-emoji { font-size: 3.6rem; display: block; line-height: 1; margin-bottom: 14px; }
+
+    .card-name {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,.2);
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: .88rem;
+      color: rgba(255,255,255,.78);
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+
+    .card-btn {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 50px;
+      padding: 7px 20px;
+      font-size: .85rem;
+      font-weight: 800;
+      color: #fff;
+      backdrop-filter: blur(4px);
+      transition: background .15s;
+    }
+    .card:hover .card-btn { background: rgba(255,255,255,.3); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 54px;
+      color: rgba(255,255,255,.25);
+      font-size: .8rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 360px) {
+      .game-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 Kids Games</h1>
+  <p class="sub">Tap a game and start playing!</p>
+</header>
+
+<div class="game-grid">
+
+  <a class="card" href="tic-tac-toe.html">
+    <div class="card-body" style="background:linear-gradient(145deg,#7c5cbf,#f472b6)">
+      <span class="card-emoji">🎮</span>
+      <div class="card-name">Tic Tac Toe</div>
+      <div class="card-desc">Pick your emoji character and battle a friend!</div>
+      <span class="card-btn">Play →</span>
+    </div>
+  </a>
+
+  <a class="card" href="number-game.html">
+    <div class="card-body" style="background:linear-gradient(145deg,#4facfe,#2dd4bf)">
+      <span class="card-emoji">🔢</span>
+      <div class="card-name">Number Games</div>
+      <div class="card-desc">Sort numbers in order and count animals into groups</div>
+      <span class="card-btn">Play →</span>
+    </div>
+  </a>
+
+  <a class="card" href="number-voice.html">
+    <div class="card-body" style="background:linear-gradient(145deg,#f7971e,#ffd200)">
+      <span class="card-emoji">🔊</span>
+      <div class="card-name">Number Voice</div>
+      <div class="card-desc">Tap any number card and hear it spoken clearly</div>
+      <span class="card-btn">Play →</span>
+    </div>
+  </a>
+
+  <a class="card" href="phonemic-chart.html">
+    <div class="card-body" style="background:linear-gradient(145deg,#4776E6,#8E54E9)">
+      <span class="card-emoji">🗣️</span>
+      <div class="card-name">Phonemic Chart</div>
+      <div class="card-desc">Tap English sound symbols and practice pronunciation</div>
+      <span class="card-btn">Play →</span>
+    </div>
+  </a>
+
+  <a class="card" href="shape-safari.html">
+    <div class="card-body" style="background:linear-gradient(145deg,#11998e,#38ef7d)">
+      <span class="card-emoji">🦁</span>
+      <div class="card-name">Shape Safari</div>
+      <div class="card-desc">Tap the bouncing shapes to discover hidden animals!</div>
+      <span class="card-btn">Play →</span>
+    </div>
+  </a>
+
+</div>
+
+<footer>5 games · Works on any device · No install needed</footer>
+
+<script>
+  for (let i = 0; i < 32; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const sz = 1.5 + Math.random() * 3.5;
+    el.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;opacity:${.25+Math.random()*.75};animation-duration:${9+Math.random()*14}s;animation-delay:-${Math.random()*20}s;`;
+    document.body.appendChild(el);
+  }
+</script>
+</body>
+</html>
