@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spell My Name ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #fef9f0;
+      --purple: #7c5cbf;
+      --radius: 18px;
+      --shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Back link ── */
+    .back-hub {
+      position: fixed; top: 14px; left: 14px;
+      background: #fff;
+      border: 1.5px solid rgba(0,0,0,.1);
+      box-shadow: 0 2px 12px rgba(0,0,0,.12);
+      border-radius: 50px;
+      padding: 8px 18px;
+      color: #475569;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: .82rem;
+      text-decoration: none;
+      z-index: 9999;
+      transition: box-shadow .15s;
+    }
+    .back-hub:hover { box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+
+    /* ── Screen system ── */
+    .screen { display: none; }
+
+    /* ── Entry screen ── */
+    #s-entry.active {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 72px 20px 40px;
+    }
+
+    .entry-card {
+      background: #fff;
+      border-radius: 32px;
+      padding: 52px 48px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.12);
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+    }
+
+    .entry-emoji { font-size: 4rem; line-height: 1; margin-bottom: 16px; display: block; }
+    .entry-title { font-size: 2rem; font-weight: 900; color: var(--purple); margin-bottom: 8px; }
+    .entry-sub   { font-size: 1rem; color: #94a3b8; font-weight: 700; margin-bottom: 32px; }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .name-input {
+      flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      border: 2.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      color: #1e293b;
+      background: var(--bg);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      text-transform: capitalize;
+    }
+    .name-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,92,191,.12); }
+    .name-input::placeholder { color: #cbd5e1; font-weight: 700; }
+
+    .hear-entry-btn {
+      font-size: 1.4rem;
+      background: #f0f4ff;
+      border: 2px solid #c7d2fe;
+      border-radius: 16px;
+      padding: 0 18px;
+      cursor: pointer;
+      transition: background .15s, transform .12s;
+      flex-shrink: 0;
+    }
+    .hear-entry-btn:hover  { background: #e0e7ff; transform: scale(1.06); }
+    .hear-entry-btn:active { transform: scale(.96); }
+
+    .entry-error {
+      min-height: 22px;
+      color: #ef4444;
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .play-btn {
+      width: 100%;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 6px 22px rgba(124,92,191,.35);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .play-btn:hover  { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(124,92,191,.45); }
+    .play-btn:active { transform: translateY(0); }
+
+    /* ── Game screen ── */
+    #s-game.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 68px 20px 48px;
+    }
+
+    .game-inner { width: 100%; max-width: 980px; }
+
+    .game-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 18px;
+    }
+    .game-title { font-size: 1.6rem; font-weight: 900; color: var(--purple); }
+
+    .settings-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; border-radius: var(--radius);
+      padding: 14px 20px; box-shadow: var(--shadow);
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+
+    .action-btn {
+      font-family: 'Nunito', sans-serif; font-size: .95rem; font-weight: 800;
+      border: none; border-radius: 50px; padding: 10px 22px; cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 3px 10px rgba(0,0,0,.1);
+    }
+    .action-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.16); }
+    .action-btn:active { transform: translateY(0); }
+    .action-btn.purple   { background: var(--purple); color: #fff; }
+    .action-btn.hint-on  { background: #e0e7ff; color: #4338ca; }
+    .action-btn.hint-off { background: #f1f5f9; color: #64748b; }
+    .action-btn.hear     { background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; }
+    .action-btn.new-name { background: #fff7ed; color: #9a3412; border: 1.5px solid #fed7aa; }
+
+    /* ── Split ── */
+    .split {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; min-height: 420px;
+    }
+    @media (max-width: 600px) { .split { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff; border-radius: 24px;
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .panel-title {
+      font-size: 1rem; font-weight: 800; color: #94a3b8;
+      letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    /* ── Tiles ── */
+    .tile {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 16px; font-size: 2rem; font-weight: 900; color: #fff;
+      cursor: grab; user-select: none; touch-action: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+      width: 72px; height: 72px;
+    }
+    .tile:hover   { transform: scale(1.07); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    .tile.lifting { opacity: .85; transform: scale(1.12) rotate(3deg); box-shadow: 0 14px 32px rgba(0,0,0,.22); cursor: grabbing; z-index: 1000; }
+
+    .letter-pool { display: flex; flex-wrap: wrap; gap: 14px; align-content: flex-start; }
+
+    /* ── Drop slots ── */
+    .slots-col { display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; }
+
+    .drop-slot {
+      width: 72px; height: 72px; font-size: 1.8rem; font-weight: 900; color: #c8d2e0;
+      border-radius: 16px; border: 3px dashed #cbd5e1;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .drop-slot.no-hint { font-size: 1.3rem; }
+    .drop-slot.over    { border-color: var(--purple); background: #f5f3ff; color: #a78bfa; }
+    .drop-slot.filled  { border-style: solid; }
+
+    /* ── Animations ── */
+    @keyframes shakeBack {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-10px); }
+      40%     { transform: translateX(10px); }
+      60%     { transform: translateX(-7px); }
+      80%     { transform: translateX(7px); }
+    }
+    .shake { animation: shakeBack .45s ease; }
+
+    @keyframes snapIn {
+      0%   { transform: scale(1.3); }
+      60%  { transform: scale(.92); }
+      100% { transform: scale(1); }
+    }
+    .snap { animation: snapIn .3s cubic-bezier(.36,.07,.19,.97); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── Win overlay ── */
+    #overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(124,92,191,.9); z-index: 500;
+      align-items: center; justify-content: center; text-align: center;
+    }
+    #overlay.active { display: flex; animation: fadeIn .4s ease; }
+
+    .overlay-box {
+      background: #fff; border-radius: 32px; padding: 48px 56px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      animation: popIn .4s cubic-bezier(.36,.07,.19,.97);
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .overlay-trophy {
+      font-size: 5rem; display: block; margin-bottom: .4rem;
+      animation: bounce .5s ease infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: scale(1) rotate(-5deg); }
+      to   { transform: scale(1.15) rotate(5deg); }
+    }
+
+    .overlay-name { font-size: 3rem; font-weight: 900; color: var(--purple); letter-spacing: .08em; margin-bottom: .3rem; }
+    .overlay-msg  { font-size: 1.25rem; font-weight: 800; color: #475569; margin-bottom: .3rem; }
+    .overlay-sub  { font-size: 1rem; color: #94a3b8; font-weight: 700; margin-bottom: 1.8rem; }
+
+    .overlay-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed; pointer-events: none;
+      animation: confettiFall linear forwards; z-index: 600; border-radius: 3px;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="back-hub">← All Games</a>
+
+<!-- ══════════════════════════════════════
+     ENTRY SCREEN
+══════════════════════════════════════ -->
+<div class="screen active" id="s-entry">
+  <div class="entry-card">
+    <span class="entry-emoji">✨</span>
+    <h1 class="entry-title">What's your name?</h1>
+    <p class="entry-sub">Type it in and learn to spell it!</p>
+
+    <div class="input-row">
+      <input class="name-input" id="name-input" type="text"
+        placeholder="e.g. John" maxlength="14"
+        autocomplete="off" spellcheck="false" autofocus
+        oninput="clearError()"
+        onkeydown="if(event.key==='Enter')startGame()" />
+      <button class="hear-entry-btn" onclick="hearInputName()" title="Hear name">🔊</button>
+    </div>
+
+    <div class="entry-error" id="entry-error"></div>
+    <button class="play-btn" onclick="startGame()">Let's Play! →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     GAME SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="s-game">
+  <div class="game-inner">
+
+    <div class="game-header">
+      <div class="game-title" id="game-title">✨ Spell your name</div>
+    </div>
+
+    <div class="settings-bar">
+      <button class="action-btn hear"     onclick="hearCurrentName()">🔊 Hear Name</button>
+      <button class="action-btn hint-on"  id="hint-btn" onclick="toggleHints()">💡 Hints: ON</button>
+      <button class="action-btn new-name" onclick="goBack()">✏️ New Name</button>
+      <button class="action-btn purple"   onclick="reshuffleGame()">🔀 Shuffle</button>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <div class="panel-title">Letters — drag these!</div>
+        <div class="letter-pool" id="pool"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Build your name →</div>
+        <div class="slots-col" id="slots"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WIN OVERLAY
+══════════════════════════════════════ -->
+<div id="overlay">
+  <div class="overlay-box">
+    <span class="overlay-trophy">🌟</span>
+    <div class="overlay-name" id="ov-name"></div>
+    <div class="overlay-msg">You spelled your name! 🎉</div>
+    <div class="overlay-sub">Amazing! Keep practising!</div>
+    <div class="overlay-btns">
+      <button class="action-btn purple"   onclick="reshuffleGame()">Play Again! 🔤</button>
+      <button class="action-btn new-name" onclick="goBack()">New Name ✏️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   AUDIO
+════════════════════════════════════════════ */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, gain = .4) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const vol = ctx.createGain();
+  osc.connect(vol); vol.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  vol.gain.setValueAtTime(gain, ctx.currentTime);
+  vol.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration);
+  osc.start(); osc.stop(ctx.currentTime + duration);
+}
+
+function soundCorrect() {
+  [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .22, .35), i * 100));
+}
+function soundWrong() { playTone(160, 'sawtooth', .35, .3); }
+function soundWin()   {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .3, .4), i * 120));
+}
+
+/* ════════════════════════════════════════════
+   SPEECH
+════════════════════════════════════════════ */
+function speak(text, rate = 0.85, pitch = 1.1) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = rate; u.pitch = pitch; u.volume = 1;
+  const go = () => {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+  speechSynthesis.getVoices().length ? go() : (speechSynthesis.onvoiceschanged = go);
+}
+
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+// 14 colors — indexed by letter position so duplicates look distinct
+const TILE_COLORS = [
+  '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+  '#2dd4bf','#60a5fa','#818cf8','#a78bfa','#e879f9',
+  '#f472b6','#f43f5e','#ef4444','#f97316',
+];
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let currentName = '';
+let placed      = 0;
+let total       = 0;
+let hintMode    = true;
+
+/* ════════════════════════════════════════════
+   SCREENS
+════════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ════════════════════════════════════════════
+   ENTRY
+════════════════════════════════════════════ */
+function formatName(raw) {
+  const clean = raw.replace(/[^a-zA-Z]/g, '');
+  if (!clean) return '';
+  return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+}
+
+function clearError() {
+  document.getElementById('entry-error').textContent = '';
+}
+
+function hearInputName() {
+  const name = formatName(document.getElementById('name-input').value);
+  if (name) speak(name, 0.78, 1.1);
+}
+
+function startGame() {
+  const name = formatName(document.getElementById('name-input').value);
+  if (!name) {
+    document.getElementById('entry-error').textContent = 'Please type a name first!';
+    document.getElementById('name-input').focus();
+    return;
+  }
+  if (name.length < 2) {
+    document.getElementById('entry-error').textContent = 'Name needs at least 2 letters!';
+    document.getElementById('name-input').focus();
+    return;
+  }
+  currentName = name;
+  document.getElementById('game-title').textContent = `✨ Spell: ${name}`;
+  document.getElementById('ov-name').textContent    = name;
+  initGame();
+  show('s-game');
+}
+
+/* ════════════════════════════════════════════
+   DRAG — unified mouse + touch
+════════════════════════════════════════════ */
+let dragging = null;
+
+function startDrag(el, clientX, clientY) {
+  const rect  = el.getBoundingClientRect();
+  const clone = el.cloneNode(true);
+  clone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;` +
+    `width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:1000;margin:0;`;
+  clone.classList.add('lifting');
+  document.body.appendChild(clone);
+  dragging = { el, clone, offsetX: clientX - rect.left, offsetY: clientY - rect.top };
+  el.style.opacity = '.3';
+}
+
+function moveDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.left = (clientX - dragging.offsetX) + 'px';
+  dragging.clone.style.top  = (clientY - dragging.offsetY) + 'px';
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('over'));
+  const slot = under && under.closest('.drop-slot');
+  if (slot && !slot.dataset.filled) slot.classList.add('over');
+}
+
+function endDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('over'));
+  const slot = under && under.closest('.drop-slot');
+  let accepted = false;
+  if (slot && !slot.dataset.filled) accepted = tryDrop(slot, dragging.el);
+  if (!accepted) {
+    dragging.el.style.opacity = '1';
+    dragging.el.classList.add('shake');
+    setTimeout(() => dragging.el.classList.remove('shake'), 500);
+    soundWrong();
+  }
+  dragging.clone.remove();
+  dragging = null;
+}
+
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup',   e => endDrag(e.clientX, e.clientY));
+document.addEventListener('touchmove', e => {
+  if (dragging) { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
+}, { passive: false });
+document.addEventListener('touchend', e => {
+  if (dragging) endDrag(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+});
+
+function attachDrag(el) {
+  el.addEventListener('mousedown',  e => { e.preventDefault(); startDrag(el, e.clientX, e.clientY); });
+  el.addEventListener('touchstart', e => { e.preventDefault(); startDrag(el, e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+}
+
+/* ════════════════════════════════════════════
+   GAME INIT
+════════════════════════════════════════════ */
+function initGame() {
+  placed = 0;
+  const letters = currentName.split('');
+  total = letters.length;
+
+  // Each letter tagged with its position index for color (so duplicates differ visually)
+  const tilesData = letters.map((letter, pos) => ({ letter, pos }));
+  const shuffled  = shuffle([...tilesData]);
+
+  // Build pool (shuffled)
+  const pool = document.getElementById('pool');
+  pool.innerHTML = '';
+  shuffled.forEach(({ letter, pos }) => {
+    const tile = document.createElement('div');
+    tile.className      = 'tile';
+    tile.dataset.letter = letter;
+    tile.dataset.pos    = pos;
+    tile.textContent    = letter;
+    tile.style.background = TILE_COLORS[pos % TILE_COLORS.length];
+    attachDrag(tile);
+    pool.appendChild(tile);
+  });
+
+  // Build slots (in correct name order)
+  const slotsEl = document.getElementById('slots');
+  slotsEl.innerHTML = '';
+  letters.forEach((letter, i) => {
+    const slot = document.createElement('div');
+    slot.className       = 'drop-slot' + (hintMode ? '' : ' no-hint');
+    slot.dataset.expects = letter;
+    slot.dataset.idx     = i;
+    slot.textContent     = hintMode ? letter : '?';
+    slotsEl.appendChild(slot);
+  });
+}
+
+/* ════════════════════════════════════════════
+   DROP
+════════════════════════════════════════════ */
+function tryDrop(slot, tile) {
+  // Any tile whose letter matches the slot's expected letter is accepted
+  if (tile.dataset.letter !== slot.dataset.expects) return false;
+
+  const letter = tile.dataset.letter;
+  const pos    = parseInt(tile.dataset.pos);
+  const color  = TILE_COLORS[pos % TILE_COLORS.length];
+
+  slot.textContent = '';
+  const pt = tile.cloneNode(true);
+  pt.style.cssText += ';opacity:1;cursor:default;transform:none;width:64px;height:64px;';
+  pt.classList.add('snap');
+  slot.appendChild(pt);
+  slot.dataset.filled  = '1';
+  slot.style.borderStyle = 'solid';
+  slot.style.borderColor = color;
+
+  tile.remove();
+  soundCorrect();
+  // Speak the letter — lowercase avoids "Capital A"
+  setTimeout(() => speak(letter.toLowerCase()), 350);
+
+  placed++;
+  if (placed === total) setTimeout(showWin, 600);
+  return true;
+}
+
+/* ════════════════════════════════════════════
+   HINTS
+════════════════════════════════════════════ */
+function toggleHints() {
+  hintMode = !hintMode;
+  const btn = document.getElementById('hint-btn');
+  btn.textContent = hintMode ? '💡 Hints: ON' : '💡 Hints: OFF';
+  btn.className   = 'action-btn ' + (hintMode ? 'hint-on' : 'hint-off');
+  document.querySelectorAll('.drop-slot:not([data-filled])').forEach(slot => {
+    slot.textContent = hintMode ? slot.dataset.expects : '?';
+    slot.classList.toggle('no-hint', !hintMode);
+  });
+}
+
+/* ════════════════════════════════════════════
+   HEAR NAME
+════════════════════════════════════════════ */
+function hearCurrentName() {
+  speak(currentName, 0.78, 1.1);
+}
+
+/* ════════════════════════════════════════════
+   WIN
+════════════════════════════════════════════ */
+function showWin() {
+  soundWin();
+  spawnConfetti();
+  document.getElementById('overlay').classList.add('active');
+  setTimeout(() => speak(`Well done! Your name is ${currentName}!`, 0.8, 1.05), 500);
+}
+
+function reshuffleGame() {
+  document.getElementById('overlay').classList.remove('active');
+  initGame();
+}
+
+function goBack() {
+  document.getElementById('overlay').classList.remove('active');
+  // Pre-fill input so they can easily change or replay
+  document.getElementById('name-input').value = currentName;
+  clearError();
+  show('s-entry');
+}
+
+/* ════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════ */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = ~~(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function spawnConfetti() {
+  const palette = ['#f87171','#fb923c','#fbbf24','#4ade80','#60a5fa','#a78bfa','#f472b6'];
+  for (let i = 0; i < 100; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const sz = 8 + ~~(Math.random() * 8);
+      el.style.cssText = `left:${Math.random()*100}vw;top:-20px;` +
+        `background:${palette[~~(Math.random()*palette.length)]};` +
+        `width:${sz}px;height:${sz}px;` +
+        `border-radius:${Math.random()>.5?'50%':'3px'};` +
+        `animation-duration:${1.6+Math.random()*2}s;` +
+        `animation-delay:${Math.random()*.5}s;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, i * 25);
+  }
+}
+</script>
+</body>
+</html>

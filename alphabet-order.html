@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alphabet Order 🔤</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #fef9f0;
+      --purple: #7c5cbf;
+      --radius: 18px;
+      --shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 68px 20px 48px;
+    }
+
+    /* ── Back link ── */
+    .back-hub {
+      position: fixed; top: 14px; left: 14px;
+      background: #fff;
+      border: 1.5px solid rgba(0,0,0,.1);
+      box-shadow: 0 2px 12px rgba(0,0,0,.12);
+      border-radius: 50px;
+      padding: 8px 18px;
+      color: #475569;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: .82rem;
+      text-decoration: none;
+      z-index: 9999;
+      transition: box-shadow .15s;
+    }
+    .back-hub:hover { box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+
+    /* ── Screen ── */
+    .screen { width: 100%; max-width: 980px; animation: fadeIn .35s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Header ── */
+    .game-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .game-title { font-size: 1.6rem; font-weight: 900; color: var(--purple); }
+
+    /* ── Settings bar ── */
+    .settings-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; border-radius: var(--radius);
+      padding: 14px 20px; box-shadow: var(--shadow);
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .settings-bar label { font-weight: 700; color: #475569; font-size: .95rem; }
+    .settings-bar select {
+      font-family: 'Nunito', sans-serif; font-size: .95rem; font-weight: 700;
+      border: 2px solid #e2e8f0; border-radius: 10px;
+      padding: 7px 12px; color: #1e293b; background: var(--bg); cursor: pointer;
+    }
+
+    .action-btn {
+      font-family: 'Nunito', sans-serif; font-size: .95rem; font-weight: 800;
+      border: none; border-radius: 50px; padding: 10px 24px; cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 3px 10px rgba(0,0,0,.12);
+    }
+    .action-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.16); }
+    .action-btn:active { transform: translateY(0); }
+    .action-btn.purple { background: var(--purple); color: #fff; }
+    .action-btn.hint-on  { background: #e0e7ff; color: #4338ca; }
+    .action-btn.hint-off { background: #f1f5f9; color: #64748b; }
+
+    /* ── Split layout ── */
+    .split {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; min-height: 420px;
+    }
+    @media (max-width: 600px) { .split { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff; border-radius: 24px;
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .panel-title {
+      font-size: 1rem; font-weight: 800; color: #94a3b8;
+      letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    /* ── Draggable tiles ── */
+    .tile {
+      display: inline-flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 16px; font-weight: 900;
+      cursor: grab; user-select: none; touch-action: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+      width: 72px; height: 72px;
+    }
+    .tile:hover   { transform: scale(1.07); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    .tile.lifting { opacity: .85; transform: scale(1.12) rotate(3deg); box-shadow: 0 14px 32px rgba(0,0,0,.22); cursor: grabbing; z-index: 1000; }
+
+    /* Letter display inside tile */
+    .ltr-single { font-size: 2rem;  color: #fff; line-height: 1; }
+    .ltr-u      { font-size: 1.65rem; color: #fff; line-height: 1.1; }
+    .ltr-l      { font-size: .95rem;  color: rgba(255,255,255,.8); line-height: 1; }
+
+    /* ── Pool ── */
+    .letter-pool { display: flex; flex-wrap: wrap; gap: 14px; align-content: flex-start; }
+
+    /* ── Drop slots ── */
+    .slots-col { display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; }
+
+    .drop-slot {
+      width: 72px; height: 72px;
+      border-radius: 16px; border: 3px dashed #cbd5e1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-weight: 900;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .drop-slot .slot-u { font-size: 1.5rem; color: #c8d2e0; line-height: 1.1; }
+    .drop-slot .slot-l { font-size: .85rem; color: #c8d2e0; line-height: 1; }
+    .drop-slot.no-hint .slot-u { font-size: 1.1rem; color: #cbd5e1; }
+    .drop-slot.over    { border-color: var(--purple); background: #f5f3ff; }
+    .drop-slot.filled  { border-style: solid; }
+
+    /* ── Animations ── */
+    @keyframes shakeBack {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-10px); }
+      40%     { transform: translateX(10px); }
+      60%     { transform: translateX(-7px); }
+      80%     { transform: translateX(7px); }
+    }
+    .shake { animation: shakeBack .45s ease; }
+
+    @keyframes snapIn {
+      0%   { transform: scale(1.3); }
+      60%  { transform: scale(.92); }
+      100% { transform: scale(1); }
+    }
+    .snap { animation: snapIn .3s cubic-bezier(.36,.07,.19,.97); }
+
+    /* ── Win overlay ── */
+    #overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(124,92,191,.88); z-index: 500;
+      align-items: center; justify-content: center; text-align: center;
+      animation: fadeIn .4s ease;
+    }
+    #overlay.active { display: flex; }
+
+    .overlay-box {
+      background: #fff; border-radius: 32px; padding: 50px 60px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      animation: popIn .4s cubic-bezier(.36,.07,.19,.97);
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .overlay-trophy {
+      font-size: 5rem; display: block; margin-bottom: .5rem;
+      animation: bounce .5s ease infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: scale(1)    rotate(-5deg); }
+      to   { transform: scale(1.15) rotate(5deg); }
+    }
+
+    .overlay-msg { font-size: 2rem; font-weight: 900; color: var(--purple); margin-bottom: .4rem; }
+    .overlay-sub { font-size: 1.1rem; color: #94a3b8; margin-bottom: 1.8rem; }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed; pointer-events: none;
+      animation: confettiFall linear forwards; z-index: 600; border-radius: 3px;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="back-hub">← All Games</a>
+
+<div class="screen">
+  <div class="game-header">
+    <div class="game-title">🔤 Alphabet Order</div>
+  </div>
+
+  <div class="settings-bar">
+    <label for="sel-count">Letters:</label>
+    <select id="sel-count" onchange="initGame()">
+      <option value="5" selected>A – E &nbsp;(5)</option>
+      <option value="10">A – J &nbsp;(10)</option>
+      <option value="13">A – M (13)</option>
+      <option value="26">A – Z &nbsp;(26)</option>
+    </select>
+
+    <label for="sel-case">Case:</label>
+    <select id="sel-case" onchange="initGame()">
+      <option value="upper" selected>Uppercase  A B C</option>
+      <option value="lower">Lowercase  a b c</option>
+      <option value="both">Both  A a  B b</option>
+    </select>
+
+    <button class="action-btn hint-on" id="hint-btn" onclick="toggleHints()">💡 Hints: ON</button>
+    <button class="action-btn purple"  onclick="initGame()">🔀 Shuffle &amp; Restart</button>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="panel-title">Letters — drag these!</div>
+      <div class="letter-pool" id="pool"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Drop in order →</div>
+      <div class="slots-col" id="slots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Win overlay -->
+<div id="overlay">
+  <div class="overlay-box">
+    <span class="overlay-trophy">🏆</span>
+    <div class="overlay-msg">Brilliant! You did it! 🎉</div>
+    <div class="overlay-sub" id="ov-sub"></div>
+    <button class="action-btn purple" onclick="resetGame()">Play Again! 🔤</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   AUDIO — Web Audio API
+════════════════════════════════════════════ */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, gain = .4) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const vol = ctx.createGain();
+  osc.connect(vol); vol.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  vol.gain.setValueAtTime(gain, ctx.currentTime);
+  vol.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration);
+  osc.start(); osc.stop(ctx.currentTime + duration);
+}
+
+function soundCorrect() {
+  [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .22, .35), i * 100));
+}
+function soundWrong() { playTone(160, 'sawtooth', .35, .3); }
+function soundWin()   {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .3, .4), i * 120));
+}
+
+/* ════════════════════════════════════════════
+   SPEECH — US English letter names
+════════════════════════════════════════════ */
+function speakLetter(letter) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(letter);
+  u.rate = 0.85; u.pitch = 1.1; u.volume = 1;
+  const go = () => {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+  speechSynthesis.getVoices().length ? go() : (speechSynthesis.onvoiceschanged = go);
+}
+
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+// One distinct color per letter A–Z
+const LETTER_COLORS = [
+  '#f87171','#fb923c','#fbbf24','#4ade80','#34d399',
+  '#2dd4bf','#60a5fa','#818cf8','#a78bfa','#e879f9',
+  '#f472b6','#f43f5e','#ef4444','#f97316','#eab308',
+  '#22c55e','#10b981','#14b8a6','#3b82f6','#6366f1',
+  '#8b5cf6','#d946ef','#ec4899','#db2777','#84cc16',
+  '#06b6d4',
+];
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let placed   = 0;
+let total    = 0;
+let hintMode = true;
+
+/* ════════════════════════════════════════════
+   DRAG — unified mouse + touch
+════════════════════════════════════════════ */
+let dragging = null;
+
+function startDrag(el, clientX, clientY) {
+  const rect  = el.getBoundingClientRect();
+  const clone = el.cloneNode(true);
+  clone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;` +
+    `width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:1000;margin:0;`;
+  clone.classList.add('lifting');
+  document.body.appendChild(clone);
+  dragging = { el, clone, offsetX: clientX - rect.left, offsetY: clientY - rect.top, id: el.dataset.id };
+  el.style.opacity = '.3';
+}
+
+function moveDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.left = (clientX - dragging.offsetX) + 'px';
+  dragging.clone.style.top  = (clientY - dragging.offsetY) + 'px';
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('over'));
+  const slot = under && under.closest('.drop-slot');
+  if (slot && !slot.dataset.filled) slot.classList.add('over');
+}
+
+function endDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('over'));
+  const slot = under && under.closest('.drop-slot');
+  let accepted = false;
+  if (slot && !slot.dataset.filled) accepted = tryDrop(slot, dragging.el);
+  if (!accepted) {
+    dragging.el.style.opacity = '1';
+    dragging.el.classList.add('shake');
+    setTimeout(() => dragging.el.classList.remove('shake'), 500);
+    soundWrong();
+  }
+  dragging.clone.remove();
+  dragging = null;
+}
+
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup',   e => endDrag(e.clientX, e.clientY));
+document.addEventListener('touchmove', e => {
+  if (dragging) { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
+}, { passive: false });
+document.addEventListener('touchend', e => {
+  if (dragging) endDrag(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+});
+
+function attachDrag(el) {
+  el.addEventListener('mousedown',  e => { e.preventDefault(); startDrag(el, e.clientX, e.clientY); });
+  el.addEventListener('touchstart', e => { e.preventDefault(); startDrag(el, e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+}
+
+/* ════════════════════════════════════════════
+   RENDER HELPERS
+════════════════════════════════════════════ */
+function tileInner(letter, caseMode) {
+  if (caseMode === 'upper') return `<span class="ltr-single">${letter}</span>`;
+  if (caseMode === 'lower') return `<span class="ltr-single">${letter.toLowerCase()}</span>`;
+  // both: uppercase large, lowercase small below
+  return `<span class="ltr-u">${letter}</span><span class="ltr-l">${letter.toLowerCase()}</span>`;
+}
+
+function slotInner(letter, caseMode, hintOn) {
+  if (!hintOn) return `<span class="slot-u">?</span>`;
+  if (caseMode === 'upper') return `<span class="slot-u">${letter}</span>`;
+  if (caseMode === 'lower') return `<span class="slot-u">${letter.toLowerCase()}</span>`;
+  return `<span class="slot-u">${letter}</span><span class="slot-l">${letter.toLowerCase()}</span>`;
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function initGame() {
+  placed = 0;
+  const count    = parseInt(document.getElementById('sel-count').value);
+  const caseMode = document.getElementById('sel-case').value;
+  total = count;
+
+  const letters  = LETTERS.slice(0, count);
+  const shuffled = shuffle([...letters]);
+
+  // Build pool (shuffled tiles)
+  const pool = document.getElementById('pool');
+  pool.innerHTML = '';
+  shuffled.forEach(letter => {
+    const tile = document.createElement('div');
+    tile.className   = 'tile';
+    tile.dataset.id  = letter;                                    // always uppercase key
+    tile.innerHTML   = tileInner(letter, caseMode);
+    tile.style.background = LETTER_COLORS[letter.charCodeAt(0) - 65];
+    attachDrag(tile);
+    pool.appendChild(tile);
+  });
+
+  // Build slots (in order A→Z)
+  const slotsEl = document.getElementById('slots');
+  slotsEl.innerHTML = '';
+  letters.forEach(letter => {
+    const slot = document.createElement('div');
+    slot.className       = 'drop-slot' + (hintMode ? '' : ' no-hint');
+    slot.dataset.expects = letter;
+    slot.innerHTML       = slotInner(letter, caseMode, hintMode);
+    slotsEl.appendChild(slot);
+  });
+
+  document.getElementById('ov-sub').textContent =
+    `You sorted ${count} letter${count > 1 ? 's' : ''} perfectly!`;
+}
+
+/* ════════════════════════════════════════════
+   DROP LOGIC
+════════════════════════════════════════════ */
+function tryDrop(slot, tile) {
+  if (tile.dataset.id !== slot.dataset.expects) return false;
+
+  const letter   = tile.dataset.id;
+  const caseMode = document.getElementById('sel-case').value;
+  const color    = LETTER_COLORS[letter.charCodeAt(0) - 65];
+  const speakAs  = letter.toLowerCase(); // lowercase avoids TTS saying "Capital A"
+
+  // Place tile clone into slot
+  slot.innerHTML = '';
+  const placed_tile = tile.cloneNode(true);
+  placed_tile.style.cssText += ';opacity:1;cursor:default;transform:none;width:64px;height:64px;';
+  placed_tile.classList.add('snap');
+  slot.appendChild(placed_tile);
+  slot.dataset.filled  = '1';
+  slot.style.borderStyle = 'solid';
+  slot.style.borderColor = color;
+
+  tile.remove();
+  soundCorrect();
+  setTimeout(() => speakLetter(speakAs), 350);
+
+  placed++;
+  if (placed === total) setTimeout(showWin, 500);
+  return true;
+}
+
+/* ════════════════════════════════════════════
+   HINTS TOGGLE
+════════════════════════════════════════════ */
+function toggleHints() {
+  hintMode = !hintMode;
+  const btn = document.getElementById('hint-btn');
+  btn.textContent = hintMode ? '💡 Hints: ON' : '💡 Hints: OFF';
+  btn.className   = 'action-btn ' + (hintMode ? 'hint-on' : 'hint-off');
+
+  const caseMode = document.getElementById('sel-case').value;
+  document.querySelectorAll('.drop-slot:not([data-filled])').forEach(slot => {
+    slot.innerHTML = slotInner(slot.dataset.expects, caseMode, hintMode);
+    slot.classList.toggle('no-hint', !hintMode);
+  });
+}
+
+/* ════════════════════════════════════════════
+   WIN
+════════════════════════════════════════════ */
+function showWin() {
+  soundWin();
+  spawnConfetti();
+  document.getElementById('overlay').classList.add('active');
+}
+
+function resetGame() {
+  document.getElementById('overlay').classList.remove('active');
+  initGame();
+}
+
+/* ════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════ */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = ~~(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function spawnConfetti() {
+  const palette = ['#f87171','#fb923c','#fbbf24','#4ade80','#60a5fa','#a78bfa','#f472b6'];
+  for (let i = 0; i < 100; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const sz = 8 + ~~(Math.random() * 8);
+      el.style.cssText = `left:${Math.random()*100}vw;top:-20px;` +
+        `background:${palette[~~(Math.random()*palette.length)]};` +
+        `width:${sz}px;height:${sz}px;` +
+        `border-radius:${Math.random()>.5?'50%':'3px'};` +
+        `animation-duration:${1.6+Math.random()*2}s;animation-delay:${Math.random()*.5}s;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, i * 25);
+  }
+}
+
+/* ── Boot ── */
+initGame();
+</script>
+</body>
+</html>

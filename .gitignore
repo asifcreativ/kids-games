@@ -1,5 +1,5 @@
-# Planning and AI guidance files
-*.md
+# Private planning notes and voice transcriptions
+specs/
 
 # macOS metadata
 .DS_Store
