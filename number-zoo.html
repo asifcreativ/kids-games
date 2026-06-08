@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number Zoo 🦁</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(155deg, #bae6fd 0%, #bbf7d0 100%);
+      padding: 72px 16px 48px;
+      overflow-x: hidden;
+    }
+
+    .wrapper { max-width: 960px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .page-header { text-align: center; margin-bottom: 20px; }
+    .page-header h1 {
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      font-weight: 900;
+      color: #1e3a5f;
+      text-shadow: 0 3px 0 rgba(255,255,255,.55);
+      line-height: 1.1;
+    }
+    .page-header p {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    /* ── Settings ── */
+    .settings-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(8px);
+      border-radius: 18px;
+      padding: 12px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .settings-bar label { font-size: .9rem; font-weight: 700; color: #475569; }
+    .settings-bar select {
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px 10px;
+      color: #1e293b;
+      background: #fff;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .new-btn {
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 50px;
+      padding: 9px 22px;
+      background: #1e3a5f;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s;
+      margin-left: auto;
+    }
+    .new-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+
+    /* ── Layout ── */
+    .zoo-layout {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 580px) {
+      .zoo-layout { grid-template-columns: 1fr; }
+    }
+
+    .zoo-panel {
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(8px);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    }
+    .panel-title {
+      font-size: .82rem;
+      font-weight: 900;
+      color: #94a3b8;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* ── Pool ── */
+    #pool {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    @media (max-width: 580px) {
+      #pool { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    }
+
+    /* ── Animal tile ── */
+    .animal-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      border: 3px solid;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      position: relative;
+      box-shadow: 0 4px 14px rgba(0,0,0,.13);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .animal-tile:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 22px rgba(0,0,0,.18);
+    }
+    .animal-tile.lifting {
+      opacity: .85;
+      transform: scale(1.12) rotate(3deg);
+      box-shadow: 0 14px 32px rgba(0,0,0,.22);
+      cursor: grabbing;
+      z-index: 1000;
+    }
+    .tile-emoji { font-size: 2.1rem; line-height: 1; }
+    .tile-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #1e293b;
+      color: #fff;
+      font-size: .78rem;
+      font-weight: 900;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+
+    @keyframes shakeBack {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-10px); }
+      40%     { transform: translateX(10px); }
+      60%     { transform: translateX(-7px); }
+      80%     { transform: translateX(7px); }
+    }
+    .shake { animation: shakeBack .45s ease; }
+
+    @keyframes snapIn {
+      0%   { transform: scale(1.3); }
+      60%  { transform: scale(.92); }
+      100% { transform: scale(1); }
+    }
+    .snap { animation: snapIn .3s cubic-bezier(.36,.07,.19,.97); }
+
+    /* ── Enclosures ── */
+    #enclosures { display: flex; flex-direction: column; gap: 14px; }
+
+    .enclosure {
+      border-radius: 18px;
+      border: 2.5px solid;
+      padding: 14px 16px;
+      transition: box-shadow .2s;
+      cursor: pointer;
+    }
+    .enclosure:hover { box-shadow: 0 6px 22px rgba(0,0,0,.13); }
+    .enclosure.complete { background: rgba(240,253,244,.95) !important; }
+
+    .enc-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      pointer-events: none;
+    }
+    .enc-icon { font-size: 1.5rem; line-height: 1; }
+    .enc-name { font-size: .95rem; font-weight: 900; color: #1e293b; flex: 1; }
+    .enc-progress {
+      font-size: .8rem;
+      font-weight: 800;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 50px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+    .enc-progress.done-badge { background: #bbf7d0; color: #15803d; }
+
+    .slots-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .sub-slot {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      border: 2.5px dashed #f87171;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      transition: border-color .2s, background .2s, transform .15s;
+      flex-shrink: 0;
+    }
+    .sub-slot.target  { border-color: #c084fc; border-style: dashed; }
+    .sub-slot.over    { border-color: #7c5cbf; border-style: solid; background: #f5f3ff; transform: scale(1.06); }
+    .sub-slot.filled  { border-style: solid; border-color: #22c55e; background: #f0fdf4; }
+
+    /* ── Win overlay ── */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,58,95,.85);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    #overlay.active { display: flex; }
+    .overlay-box {
+      background: #fff;
+      border-radius: 32px;
+      padding: 48px 60px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      animation: popIn .4s cubic-bezier(.36,.07,.19,.97);
+      max-width: 380px;
+      width: 90%;
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .ov-trophy { font-size: 4.5rem; display: block; margin-bottom: .4rem; animation: bounce .5s ease infinite alternate; }
+    @keyframes bounce {
+      from { transform: scale(1) rotate(-5deg); }
+      to   { transform: scale(1.15) rotate(5deg); }
+    }
+    .ov-msg { font-size: 1.7rem; font-weight: 900; color: #1e3a5f; margin-bottom: .3rem; }
+    .ov-sub { font-size: 1rem; color: #94a3b8; margin-bottom: 1.6rem; }
+    .ov-btn {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 32px;
+      background: #1e3a5f;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.2);
+      transition: transform .15s;
+    }
+    .ov-btn:hover { transform: translateY(-2px); }
+
+    .confetti-piece {
+      position: fixed;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+      z-index: 600;
+      border-radius: 3px;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" style="position:fixed;top:14px;left:14px;background:#fff;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 2px 12px rgba(0,0,0,.12);border-radius:50px;padding:8px 18px;color:#475569;font-family:'Nunito',sans-serif;font-weight:800;font-size:.82rem;text-decoration:none;z-index:9999;">← All Games</a>
+
+<div class="wrapper">
+  <div class="page-header">
+    <h1>🦁 Number Zoo</h1>
+    <p>Fill each animal's home — tap a home to hear how many you need!</p>
+  </div>
+
+  <div class="settings-bar">
+    <label>Animals:
+      <select id="sel-types" onchange="initGame()">
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+      </select>
+    </label>
+    <label>Count up to:
+      <select id="sel-max" onchange="initGame()">
+        <option value="3">3</option>
+        <option value="5" selected>5</option>
+        <option value="8">8</option>
+      </select>
+    </label>
+    <button class="new-btn" onclick="initGame()">🔀 New Zoo</button>
+  </div>
+
+  <div class="zoo-layout">
+    <div class="zoo-panel">
+      <div class="panel-title">🐾 Animals</div>
+      <div id="pool"></div>
+    </div>
+    <div class="zoo-panel">
+      <div class="panel-title">🏠 Homes — tap to hear!</div>
+      <div id="enclosures"></div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="overlay-box">
+    <span class="ov-trophy">🎉</span>
+    <div class="ov-msg">All animals home!</div>
+    <div class="ov-sub">Amazing job filling the zoo!</div>
+    <button class="ov-btn" onclick="overlayReplay()">New Zoo 🦁</button>
+  </div>
+</div>
+
+<script>
+const ANIMALS = [
+  { emoji: '🦁', name: 'Lion',       plural: 'lions' },
+  { emoji: '🐵', name: 'Monkey',     plural: 'monkeys' },
+  { emoji: '🐘', name: 'Elephant',   plural: 'elephants' },
+  { emoji: '🦒', name: 'Giraffe',    plural: 'giraffes' },
+  { emoji: '🐧', name: 'Penguin',    plural: 'penguins' },
+  { emoji: '🦊', name: 'Fox',        plural: 'foxes' },
+  { emoji: '🐼', name: 'Panda',      plural: 'pandas' },
+  { emoji: '🦓', name: 'Zebra',      plural: 'zebras' },
+  { emoji: '🦛', name: 'Hippo',      plural: 'hippos' },
+  { emoji: '🐨', name: 'Koala',      plural: 'koalas' },
+  { emoji: '🐯', name: 'Tiger',      plural: 'tigers' },
+  { emoji: '🦏', name: 'Rhino',      plural: 'rhinos' },
+  { emoji: '🐊', name: 'Crocodile',  plural: 'crocodiles' },
+  { emoji: '🐆', name: 'Jaguar',     plural: 'jaguars' },
+  { emoji: '🦍', name: 'Gorilla',    plural: 'gorillas' },
+  { emoji: '🐻', name: 'Bear',       plural: 'bears' },
+];
+
+const GROUP_COLORS = [
+  '#f87171','#fb923c','#fbbf24','#4ade80',
+  '#60a5fa','#a78bfa','#f472b6','#34d399',
+];
+
+/* ── State ── */
+let groups = [];
+let totalSlots = 0;
+let totalFilled = 0;
+
+/* ── Audio ── */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+function playTone(freq, type, duration, gain = .4) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const vol = ctx.createGain();
+  osc.connect(vol); vol.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  vol.gain.setValueAtTime(gain, ctx.currentTime);
+  vol.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration);
+  osc.start(); osc.stop(ctx.currentTime + duration);
+}
+function soundCorrect() {
+  [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .22, .35), i * 100));
+}
+function soundWrong() { playTone(160, 'sawtooth', .35, .3); }
+function soundWin() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'sine', .3, .4), i * 120));
+}
+
+/* ── Speech ── */
+function speak(text, rate = 0.85, pitch = 1.1) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = rate; u.pitch = pitch; u.volume = 1;
+  const go = () => {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  };
+  speechSynthesis.getVoices().length ? go() : (speechSynthesis.onvoiceschanged = go);
+}
+
+function aWord(g, n) {
+  return n === 1 ? g.animal.name.toLowerCase() : g.animal.plural;
+}
+
+/* ── Drag ── */
+let dragging = null;
+let wasDragging = false;
+
+function startDrag(el, clientX, clientY) {
+  const rect = el.getBoundingClientRect();
+  const clone = el.cloneNode(true);
+  clone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;pointer-events:none;z-index:1000;margin:0;`;
+  clone.classList.add('lifting');
+  document.body.appendChild(clone);
+  dragging = { el, clone, offsetX: clientX - rect.left, offsetY: clientY - rect.top };
+  el.style.opacity = '.25';
+
+  // Highlight matching empty slots
+  const gi = parseInt(el.dataset.gi);
+  const emoji = groups[gi].animal.emoji;
+  document.querySelectorAll('.sub-slot:not([data-filled])').forEach(s => {
+    if (s.dataset.expects === emoji) s.classList.add('target');
+  });
+}
+
+function moveDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.left = (clientX - dragging.offsetX) + 'px';
+  dragging.clone.style.top  = (clientY - dragging.offsetY) + 'px';
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.sub-slot.over').forEach(s => s.classList.remove('over'));
+  const slot = under && under.closest('.sub-slot');
+  if (slot && !slot.dataset.filled && slot.classList.contains('target')) {
+    slot.classList.add('over');
+  }
+}
+
+function endDrag(clientX, clientY) {
+  if (!dragging) return;
+  dragging.clone.style.pointerEvents = 'none';
+  const under = document.elementFromPoint(clientX, clientY);
+  document.querySelectorAll('.sub-slot').forEach(s => s.classList.remove('over', 'target'));
+
+  const slot = under && under.closest('.sub-slot');
+  let accepted = false;
+  if (slot && !slot.dataset.filled) accepted = tryDrop(slot, dragging.el);
+
+  if (!accepted) {
+    dragging.el.style.opacity = '1';
+    dragging.el.classList.add('shake');
+    setTimeout(() => dragging.el.classList.remove('shake'), 500);
+    soundWrong();
+    if (slot) {
+      const gi = parseInt(dragging.el.dataset.gi);
+      const g = groups[gi];
+      setTimeout(() => speak(`That's a ${g.animal.name.toLowerCase()}! Find the ${g.animal.name.toLowerCase()} home!`), 200);
+    }
+  }
+
+  dragging.clone.remove();
+  dragging = null;
+  wasDragging = true;
+  setTimeout(() => { wasDragging = false; }, 80);
+}
+
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup',   e => endDrag(e.clientX, e.clientY));
+document.addEventListener('touchmove', e => {
+  if (dragging) { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
+}, { passive: false });
+document.addEventListener('touchend', e => {
+  if (dragging) endDrag(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+});
+
+function attachDrag(el) {
+  el.addEventListener('mousedown',  e => { e.preventDefault(); startDrag(el, e.clientX, e.clientY); });
+  el.addEventListener('touchstart', e => { e.preventDefault(); startDrag(el, e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+}
+
+/* ── Drop ── */
+function tryDrop(slot, tile) {
+  const gi = parseInt(tile.dataset.gi);
+  const g = groups[gi];
+  if (slot.dataset.expects !== g.animal.emoji) return false;
+
+  slot.textContent = g.animal.emoji;
+  slot.dataset.filled = '1';
+  slot.classList.add('filled', 'snap');
+  setTimeout(() => slot.classList.remove('snap'), 400);
+
+  g.placed++;
+  totalFilled++;
+
+  const remaining = g.count - g.placed;
+
+  // Update badge
+  const badge = document.getElementById(`badge-${gi}`);
+  if (badge) badge.textContent = remaining;
+
+  // Update progress chip
+  const prog = document.getElementById(`progress-${gi}`);
+  if (prog) {
+    prog.textContent = `${g.placed} / ${g.count}`;
+    if (remaining === 0) prog.classList.add('done-badge');
+  }
+
+  if (remaining === 0) {
+    g.enclosureEl.classList.add('complete');
+    const tileEl = g.tileEl;
+    tileEl.style.transition = 'transform .5s ease, opacity .5s ease';
+    tileEl.style.transform = 'scale(1.3)';
+    tileEl.style.opacity = '0';
+    tileEl.style.pointerEvents = 'none';
+    setTimeout(() => tileEl.remove(), 500);
+  } else {
+    tile.style.opacity = '1';
+  }
+
+  soundCorrect();
+
+  setTimeout(() => {
+    if (remaining === 0) {
+      speak(`All ${g.count} ${aWord(g, g.count)} are home! Amazing!`);
+    } else {
+      speak(`${g.placed} ${aWord(g, g.placed)} home! ${remaining} more to go!`);
+    }
+  }, 350);
+
+  if (totalFilled === totalSlots) setTimeout(showWin, 800);
+  return true;
+}
+
+/* ── Voice interactions ── */
+function speakAnimalIntro(gi) {
+  if (wasDragging) return;
+  const g = groups[gi];
+  speak(`I am a ${g.animal.name.toLowerCase()}! Drag me to my home!`);
+}
+
+function speakEnclosureStatus(gi) {
+  if (dragging) return;
+  const g = groups[gi];
+  const remaining = g.count - g.placed;
+  if (g.placed === g.count) {
+    speak(`All ${g.count} ${aWord(g, g.count)} are home! Great job!`);
+  } else if (g.placed === 0) {
+    speak(`The ${g.animal.name.toLowerCase()} home needs ${g.count} ${aWord(g, g.count)}. Drag some here!`);
+  } else {
+    speak(`The ${g.animal.name.toLowerCase()} home has ${g.placed} ${aWord(g, g.placed)}. ${remaining} more to go!`);
+  }
+}
+
+/* ── Build ── */
+function initGame() {
+  totalFilled = 0;
+  totalSlots = 0;
+
+  const numTypes = parseInt(document.getElementById('sel-types').value);
+  const maxCount = parseInt(document.getElementById('sel-max').value);
+
+  const shuffled = [...ANIMALS].sort(() => Math.random() - .5);
+  groups = shuffled.slice(0, numTypes).map((animal, idx) => ({
+    animal,
+    count: 1 + Math.floor(Math.random() * maxCount),
+    placed: 0,
+    color: GROUP_COLORS[idx % GROUP_COLORS.length],
+    tileEl: null,
+    enclosureEl: null,
+  }));
+  totalSlots = groups.reduce((s, g) => s + g.count, 0);
+
+  buildPool();
+  buildEnclosures();
+}
+
+function buildPool() {
+  const pool = document.getElementById('pool');
+  pool.innerHTML = '';
+  groups.forEach((g, gi) => {
+    const tile = document.createElement('div');
+    tile.className = 'animal-tile';
+    tile.dataset.gi = gi;
+    tile.style.background = g.color + '28';
+    tile.style.borderColor = g.color;
+    tile.innerHTML = `<span class="tile-emoji">${g.animal.emoji}</span><span class="tile-badge" id="badge-${gi}">${g.count}</span>`;
+    attachDrag(tile);
+    tile.addEventListener('click', () => speakAnimalIntro(gi));
+    g.tileEl = tile;
+    pool.appendChild(tile);
+  });
+}
+
+function buildEnclosures() {
+  const enc = document.getElementById('enclosures');
+  enc.innerHTML = '';
+  groups.forEach((g, gi) => {
+    const box = document.createElement('div');
+    box.className = 'enclosure';
+    box.style.borderColor = g.color;
+    box.style.background = g.color + '12';
+    box.addEventListener('click', () => speakEnclosureStatus(gi));
+
+    const header = document.createElement('div');
+    header.className = 'enc-header';
+    header.innerHTML = `
+      <span class="enc-icon">${g.animal.emoji}</span>
+      <span class="enc-name">${g.animal.name} Home</span>
+      <span class="enc-progress" id="progress-${gi}">0 / ${g.count}</span>
+    `;
+    box.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'slots-grid';
+    for (let s = 0; s < g.count; s++) {
+      const slot = document.createElement('div');
+      slot.className = 'sub-slot';
+      slot.dataset.gi = gi;
+      slot.dataset.expects = g.animal.emoji;
+      grid.appendChild(slot);
+    }
+    box.appendChild(grid);
+
+    g.enclosureEl = box;
+    enc.appendChild(box);
+  });
+}
+
+/* ── Win ── */
+function showWin() {
+  soundWin();
+  spawnConfetti();
+  setTimeout(() => speak('You helped all the animals find their homes! Well done!', 0.78, 1.05), 600);
+  document.getElementById('overlay').classList.add('active');
+}
+
+function overlayReplay() {
+  document.getElementById('overlay').classList.remove('active');
+  initGame();
+}
+
+function spawnConfetti() {
+  const palette = ['#f87171','#fb923c','#fbbf24','#4ade80','#60a5fa','#a78bfa','#f472b6'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `left:${Math.random()*100}vw;top:-20px;background:${palette[~~(Math.random()*palette.length)]};width:${8+~~(Math.random()*8)}px;height:${8+~~(Math.random()*8)}px;border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.6+Math.random()*2}s;animation-delay:${Math.random()*.5}s;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, i * 25);
+  }
+}
+
+initGame();
+</script>
+</body>
+</html>
