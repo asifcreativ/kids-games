@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Think &amp; Guess — Kids Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  min-height:100svh;
+  background:linear-gradient(145deg,#667eea 0%,#764ba2 100%);
+  display:flex;flex-direction:column;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+
+a#back{
+  position:fixed;top:14px;left:14px;
+  background:#fff;border:1.5px solid rgba(0,0,0,.1);
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+  border-radius:50px;padding:8px 18px;
+  color:#475569;font-weight:800;font-size:.82rem;
+  text-decoration:none;z-index:200;
+}
+
+/* ── HUD ── */
+#hud{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:56px 16px 0;flex-shrink:0;
+}
+#cat-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.22);border-radius:50px;
+  padding:5px 13px;font-size:.8rem;font-weight:800;color:#fff;
+}
+#cat-icon{font-size:1.1rem;}
+#qnum{font-size:.85rem;font-weight:800;color:rgba(255,255,255,.85);}
+
+/* ── RIDDLE BOX ── */
+#riddle-box{
+  margin:10px 14px 0;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(6px);
+  border-radius:18px;padding:13px 16px 10px;
+  cursor:pointer;flex-shrink:0;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#riddle-box:active{background:rgba(255,255,255,.28);}
+#riddle-text{
+  font-size:clamp(.83rem,2.4vw,.97rem);
+  font-weight:700;color:#fff;
+  line-height:1.58;text-align:center;
+}
+#riddle-hint{
+  text-align:center;margin-top:7px;
+  font-size:.72rem;font-weight:700;
+  color:rgba(255,255,255,.5);letter-spacing:.02em;
+}
+
+/* ── CHOICES ── */
+#choices{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:10px;
+  padding:10px 14px 8px;
+  transition:opacity .22s;
+}
+
+.choice{
+  background:#fff;border-radius:20px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:7px;cursor:pointer;
+  box-shadow:0 5px 20px rgba(0,0,0,.22);
+  transition:transform .13s,box-shadow .13s;
+  position:relative;overflow:hidden;
+  touch-action:manipulation;
+}
+.choice:active:not(.eliminated):not(.correct){transform:scale(.92);}
+.c-emoji{font-size:clamp(2.6rem,8vw,3.4rem);line-height:1.05;}
+.c-label{font-size:clamp(.78rem,2.4vw,.92rem);font-weight:900;color:#334155;}
+
+/* Wrong → shake → eliminated */
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%    {transform:translateX(-9px);}
+  50%    {transform:translateX(9px);}
+  75%    {transform:translateX(-5px);}
+}
+.choice.wrong{animation:shake .4s ease;pointer-events:none;}
+.choice.wrong::after,
+.choice.eliminated::after{
+  content:'❌';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.4rem;
+  background:rgba(239,68,68,.1);border-radius:20px;
+}
+.choice.eliminated{opacity:.3;pointer-events:none;}
+
+/* Correct */
+@keyframes pop{
+  0%  {transform:scale(1);}
+  40% {transform:scale(1.09);}
+  75% {transform:scale(.97);}
+  100%{transform:scale(1);}
+}
+.choice.correct{
+  animation:pop .45s ease;
+  background:linear-gradient(135deg,#86efac,#22c55e);
+  pointer-events:none;
+}
+.choice.correct .c-label{color:#14532d;}
+
+/* ── PROGRESS BAR ── */
+#prog-wrap{
+  margin:0 14px 10px;height:6px;
+  background:rgba(255,255,255,.18);border-radius:50px;flex-shrink:0;
+}
+#prog-fill{height:100%;background:#fff;border-radius:50px;transition:width .45s ease;}
+
+/* ── END SCREEN ── */
+#end{
+  flex:1;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:28px 24px;
+}
+#end.show{display:flex;}
+
+@keyframes bounceIn{
+  0%  {transform:scale(0);}
+  50% {transform:scale(1.25);}
+  100%{transform:scale(1);}
+}
+#end-big{font-size:5.5rem;animation:bounceIn .65s ease;line-height:1;}
+#end-title{font-size:2rem;font-weight:900;color:#fff;margin-top:10px;}
+#end-sub  {font-size:.95rem;color:rgba(255,255,255,.72);font-weight:700;margin-top:6px;}
+#end-score{font-size:3.8rem;font-weight:900;color:#fde047;margin:12px 0 4px;}
+#end-msg  {font-size:.92rem;color:rgba(255,255,255,.68);font-weight:700;margin-bottom:28px;}
+#play-again{
+  background:#fff;border:none;border-radius:50px;
+  padding:15px 48px;font-size:1.15rem;font-weight:900;
+  color:#7c3aed;cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.25);
+  transition:transform .13s;
+}
+#play-again:active{transform:scale(.93);}
+
+/* ── SPARKLES ── */
+.spark{
+  position:fixed;pointer-events:none;font-size:1.3rem;
+  z-index:999;animation:fly .65s ease-out forwards;
+}
+@keyframes fly{
+  from{opacity:1;transform:translate(0,0) scale(1.2);}
+  to  {opacity:0;transform:translate(calc(var(--tx)*1px),calc(var(--ty)*1px)) scale(.1);}
+}
+</style>
+</head>
+<body>
+
+<a id="back" href="index.html">← All Games</a>
+
+<div id="hud">
+  <div id="cat-badge">
+    <span id="cat-icon">🐾</span>&nbsp;<span id="cat-name">Animal</span>
+  </div>
+  <span id="qnum">1 / 20</span>
+</div>
+
+<div id="riddle-box">
+  <div id="riddle-text"></div>
+  <div id="riddle-hint">🔊 Tap here to hear again</div>
+</div>
+
+<div id="choices"></div>
+<div id="prog-wrap"><div id="prog-fill"></div></div>
+
+<div id="end">
+  <div id="end-big">🎉</div>
+  <div id="end-title">You did it!</div>
+  <div id="end-sub">Correct on first try:</div>
+  <div id="end-score"></div>
+  <div id="end-msg"></div>
+  <button id="play-again">Play Again 🌟</button>
+</div>
+
+<script>
+// ── Riddle data ───────────────────────────────────────────────────────────
+// Each riddle: { q, cat, catName, win, ans (index into ch), ch [[emoji, label], ...] }
+const RIDDLES = [
+  // ANIMALS
+  { cat:'🐾', catName:'Animal',
+    q:   'I look like a horse, but I have black and white stripes. What am I?',
+    win: 'Yes! A zebra has beautiful black and white stripes!',
+    ans: 0, ch:[['🦓','Zebra'],['🐴','Horse'],['🦁','Lion'],['🦛','Hippo']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am the biggest animal on land. I have a very long nose called a trunk. What am I?',
+    win: 'Amazing! An elephant uses its trunk to drink water and pick things up!',
+    ans: 1, ch:[['🦏','Rhino'],['🐘','Elephant'],['🦛','Hippo'],['🐻','Bear']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I have a very very long neck and yellow spots. I eat leaves from the tops of tall trees. What am I?',
+    win: 'Great job! A giraffe has the longest neck of any animal!',
+    ans: 1, ch:[['🐪','Camel'],['🦒','Giraffe'],['🐴','Horse'],['🦌','Deer']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am called the king of the jungle. I have a big fluffy mane and I roar very loudly! What am I?',
+    win: 'Roar! You found the lion — the king of the jungle!',
+    ans: 2, ch:[['🐯','Tiger'],['🐆','Leopard'],['🦁','Lion'],['🐺','Wolf']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I live in the ocean. I am the biggest animal in the whole world. I spray water from the top of my head. What am I?',
+    win: 'Splash! A whale is the biggest animal in the world!',
+    ans: 3, ch:[['🦈','Shark'],['🐬','Dolphin'],['🐙','Octopus'],['🐳','Whale']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I start as a tiny egg, then I become a caterpillar, then I grow beautiful colourful wings and fly! What am I?',
+    win: 'Wonderful! A butterfly starts life as a caterpillar!',
+    ans: 0, ch:[['🦋','Butterfly'],['🐝','Bee'],['🐞','Ladybug'],['🐛','Worm']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am fluffy and white. I have very long ears. I love eating carrots and I love to hop hop hop! What am I?',
+    win: 'Boing boing! Rabbits love carrots and love to hop!',
+    ans: 1, ch:[['🐱','Cat'],['🐰','Rabbit'],['🐿️','Squirrel'],['🦊','Fox']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I sleep all through the cold winter. I love eating honey from bee hives. I am big and fluffy and brown. What am I?',
+    win: 'Grr! Bears sleep all winter — that is called hibernating!',
+    ans: 0, ch:[['🐻','Bear'],['🐺','Wolf'],['🦍','Gorilla'],['🐹','Hamster']] },
+
+  // FOOD
+  { cat:'🍽️', catName:'Food',
+    q:   'I am round and red. I grow on a tree. I taste sweet and crunchy. They say I keep the doctor away! What am I?',
+    win: 'Crunch! An apple a day keeps the doctor away!',
+    ans: 2, ch:[['🍅','Tomato'],['🍓','Strawberry'],['🍎','Apple'],['🍒','Cherry']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'I am yellow and long. I come in a big bunch. Monkeys love to eat me! What am I?',
+    win: 'Yummy! Monkeys and children both love bananas!',
+    ans: 1, ch:[['🌽','Corn'],['🍌','Banana'],['🍋','Lemon'],['🍍','Pineapple']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'You eat me on your birthday. I am sweet and I have candles on top. Everyone sings a happy song when they bring me! What am I?',
+    win: 'Happy birthday! Everyone loves birthday cake!',
+    ans: 3, ch:[['🍩','Donut'],['🍪','Cookie'],['🍦','Ice Cream'],['🎂','Cake']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'I am big and round. Outside I am green. Inside I am bright red with tiny black seeds. I am sweet and juicy! What am I?',
+    win: 'So juicy! Watermelon is sweet and perfect on a hot sunny day!',
+    ans: 0, ch:[['🍉','Watermelon'],['🥝','Kiwi'],['🍈','Melon'],['🥦','Broccoli']] },
+
+  // NATURE
+  { cat:'🌍', catName:'Nature',
+    q:   'I shine bright in the sky during the day. I give warmth and light to the whole world. Without me, nothing could grow. What am I?',
+    win: 'Brilliant! The sun gives us warmth and helps all plants grow!',
+    ans: 2, ch:[['🌙','Moon'],['⭐','Star'],['☀️','Sun'],['☁️','Cloud']] },
+
+  { cat:'🌍', catName:'Nature',
+    q:   'I fall from the sky when clouds get very heavy. I make puddles on the ground. Plants and animals need me to stay alive. What am I?',
+    win: 'Splish splash! Rain gives water to all the plants and animals!',
+    ans: 1, ch:[['❄️','Snow'],['🌧️','Rain'],['⚡','Lightning'],['🌪️','Wind']] },
+
+  { cat:'🌍', catName:'Nature',
+    q:   'You can see me in the sky after it rains and the sun comes out at the same time. I have seven beautiful colours. What am I?',
+    win: 'A rainbow! It has red, orange, yellow, green, blue, indigo, and violet!',
+    ans: 1, ch:[['☀️','Sunshine'],['🌈','Rainbow'],['🌸','Flowers'],['🌊','Ocean']] },
+
+  // VEHICLES
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I am big and red. When there is a fire somewhere, I come racing very fast with my loud siren. What am I?',
+    win: 'Wee woo wee woo! Fire trucks race to put out fires and keep us safe!',
+    ans: 1, ch:[['🚑','Ambulance'],['🚒','Fire Truck'],['🚓','Police Car'],['🚌','Bus']] },
+
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I fly very high in the sky. I carry lots of people from one country to another. I have big wings and go very very fast. What am I?',
+    win: 'Whoosh! Airplanes take us on adventures to faraway places!',
+    ans: 2, ch:[['🚁','Helicopter'],['🚀','Rocket'],['✈️','Airplane'],['🛸','UFO']] },
+
+  // KNOWLEDGE
+  { cat:'💡', catName:'Knowledge',
+    q:   'You use me every morning and every night to keep your teeth clean and healthy. I have a long handle and soft bristles. What am I?',
+    win: 'Great habit! Brushing your teeth keeps them clean and strong!',
+    ans: 1, ch:[['🧼','Soap'],['🪥','Toothbrush'],['🧴','Shampoo'],['🖌️','Paintbrush']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I am in the middle of your face. You use me to sniff beautiful flowers and smell yummy food cooking. What am I?',
+    win: 'You have a great nose — use it to smell all the beautiful things around you!',
+    ans: 3, ch:[['👁️','Eye'],['👄','Mouth'],['👂','Ear'],['👃','Nose']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'At night when the sky is dark, I appear with millions of my friends. I look like tiny sparkling lights very far away. What am I?',
+    win: 'Twinkle twinkle little star! Stars light up the night sky — some are even bigger than our sun!',
+    ans: 2, ch:[['🌙','Moon'],['☀️','Sun'],['⭐','Star'],['💫','Comet']] },
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+const SPARKS = ['✨','⭐','🌟','💫','🎉','💥','🎊'];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function prepRiddles() {
+  return shuffle(RIDDLES).map(r => {
+    const correct = r.ch[r.ans];
+    const ch      = shuffle(r.ch);
+    return { ...r, ch, ans: ch.indexOf(correct) };
+  });
+}
+
+function burst(x, y) {
+  for (let i = 0; i < 12; i++) {
+    const el       = document.createElement('div');
+    el.className   = 'spark';
+    el.textContent = SPARKS[i % SPARKS.length];
+    const a  = (i / 12) * Math.PI * 2;
+    const d  = 55 + Math.random() * 80;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.style.setProperty('--tx', Math.round(Math.cos(a) * d));
+    el.style.setProperty('--ty', Math.round(Math.sin(a) * d));
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+}
+
+// ── Speech ────────────────────────────────────────────────────────────────
+let voices = [];
+const loadVoices = () => { voices = speechSynthesis.getVoices(); };
+speechSynthesis.addEventListener('voiceschanged', loadVoices);
+loadVoices();
+
+function getVoice() {
+  return voices.find(v => v.name === 'Google US English')
+      || voices.find(v => /^Samantha/i.test(v.name))
+      || voices.find(v => /en-US/i.test(v.lang) && v.localService)
+      || voices.find(v => /en-US/i.test(v.lang))
+      || voices.find(v => /en/i.test(v.lang))
+      || null;
+}
+
+function speak(text, rate = 0.88, pitch = 1.0) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = getVoice();
+  if (v) u.voice = v;
+  u.rate  = rate;
+  u.pitch = pitch;
+  speechSynthesis.speak(u);
+}
+
+// ── State & DOM refs ──────────────────────────────────────────────────────
+let shuffled  = [];
+let qi        = 0;
+let score     = 0;
+let firstTry  = true;
+let locked    = false;
+
+const catIconEl = document.getElementById('cat-icon');
+const catNameEl = document.getElementById('cat-name');
+const qnumEl    = document.getElementById('qnum');
+const rText     = document.getElementById('riddle-text');
+const rBox      = document.getElementById('riddle-box');
+const choicesEl = document.getElementById('choices');
+const progFill  = document.getElementById('prog-fill');
+const hudEl     = document.getElementById('hud');
+const progWrap  = document.getElementById('prog-wrap');
+const endDiv    = document.getElementById('end');
+
+rBox.addEventListener('click', () => speak(shuffled[qi].q, 0.79, 1.2));
+document.getElementById('play-again').addEventListener('click', restart);
+
+// ── Game flow ─────────────────────────────────────────────────────────────
+function start() {
+  shuffled = prepRiddles();
+  qi = 0; score = 0;
+  hudEl.style.display    = '';
+  rBox.style.display     = '';
+  choicesEl.style.display = 'grid';
+  progWrap.style.display = '';
+  endDiv.classList.remove('show');
+  loadQ(0);
+}
+
+function loadQ(idx) {
+  const r  = shuffled[idx];
+  firstTry = true;
+  locked   = false;
+
+  catIconEl.textContent = r.cat;
+  catNameEl.textContent = r.catName;
+  qnumEl.textContent    = `${idx + 1} / ${RIDDLES.length}`;
+  progFill.style.width  = (idx / RIDDLES.length * 100) + '%';
+  rText.textContent     = r.q;
+
+  choicesEl.innerHTML = '';
+  r.ch.forEach(([emoji, label], i) => {
+    const d = document.createElement('div');
+    d.className   = 'choice';
+    d.innerHTML   = `<div class="c-emoji">${emoji}</div><div class="c-label">${label}</div>`;
+    d.addEventListener('click', () => onTap(d, i === r.ans));
+    choicesEl.appendChild(d);
+  });
+
+  setTimeout(() => speak(r.q, 0.79, 1.2), 400);
+}
+
+function onTap(el, correct) {
+  if (locked || el.classList.contains('eliminated') || el.classList.contains('wrong')) return;
+
+  if (correct) {
+    locked = true;
+    if (firstTry) score++;
+
+    el.classList.add('correct');
+    const rc = el.getBoundingClientRect();
+    burst(rc.left + rc.width / 2, rc.top + rc.height / 2);
+
+    setTimeout(() => speak(shuffled[qi].win, 0.84, 1.2), 150);
+    setTimeout(nextQ, 2700);
+
+  } else {
+    firstTry = false;
+    el.classList.add('wrong');
+    setTimeout(() => {
+      el.classList.remove('wrong');
+      el.classList.add('eliminated');
+    }, 430);
+    speak('Oops! Try again!', 0.9, 1.3);
+  }
+}
+
+function nextQ() {
+  qi++;
+  if (qi >= RIDDLES.length) { showEnd(); return; }
+
+  choicesEl.style.opacity = '0';
+  rBox.style.opacity      = '0';
+  setTimeout(() => {
+    loadQ(qi);
+    choicesEl.style.opacity = '1';
+    rBox.style.opacity      = '1';
+  }, 250);
+}
+
+// Smooth opacity transitions
+choicesEl.style.transition = 'opacity .22s';
+rBox.style.transition      = 'opacity .2s';
+
+function showEnd() {
+  hudEl.style.display     = 'none';
+  rBox.style.display      = 'none';
+  choicesEl.style.display = 'none';
+  progWrap.style.display  = 'none';
+
+  const pct = Math.round(score / RIDDLES.length * 100);
+  document.getElementById('end-score').textContent = `${score} / ${RIDDLES.length}`;
+  document.getElementById('end-msg').textContent   =
+    pct >= 80 ? 'Incredible! You are a superstar! 🌟' :
+    pct >= 50 ? 'Well done! Keep practising! 💪'      :
+                'Good try! Play again to learn more! 🎈';
+
+  endDiv.classList.add('show');
+
+  setTimeout(() => burst(window.innerWidth * .5, window.innerHeight * .35), 100);
+  setTimeout(() => burst(window.innerWidth * .25, window.innerHeight * .5), 350);
+  setTimeout(() => burst(window.innerWidth * .75, window.innerHeight * .5), 600);
+  setTimeout(() => speak('Hooray! You finished! Well done!', 0.82, 1.3), 400);
+}
+
+function restart() {
+  hudEl.style.display     = '';
+  rBox.style.display      = '';
+  choicesEl.style.display = 'grid';
+  progWrap.style.display  = '';
+  endDiv.classList.remove('show');
+  start();
+}
+
+start();
+</script>
+</body>
+</html>

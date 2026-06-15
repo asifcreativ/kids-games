@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>My Body — Kids Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:linear-gradient(150deg,#b3f0e8 0%,#fcd5e8 55%,#fff3b0 100%);
+  min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;
+  overflow:hidden;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+
+a#back{
+  position:fixed;top:14px;left:14px;
+  background:#fff;border:1.5px solid rgba(0,0,0,.1);
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+  border-radius:50px;padding:8px 18px;
+  color:#475569;font-weight:800;font-size:.82rem;
+  text-decoration:none;z-index:200;
+}
+
+h1{
+  margin-top:12px;
+  font-size:1.3rem;font-weight:900;
+  color:#4a2e7a;letter-spacing:-.5px;
+}
+
+#progress{
+  font-size:.84rem;font-weight:700;color:#7c5fb5;margin-top:3px;min-height:1.2em;
+}
+
+#wrap{
+  position:relative;
+  height:min(470px,calc(100svh - 115px));
+  aspect-ratio:300/520;
+  margin-top:6px;
+  flex-shrink:0;
+}
+
+svg{width:100%;height:100%;display:block;overflow:visible;}
+
+/* ─── Hotspots ───────────────────────────────── */
+.hs{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:20px;height:20px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+.hs-dot{
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:3px solid white;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);
+  z-index:3;
+  transition:transform .12s,opacity .25s;
+}
+
+.hs:active .hs-dot{transform:scale(.72);}
+
+.hs-ring{
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:2.5px solid;
+  animation:sonar 2.5s ease-out infinite;
+  pointer-events:none;z-index:2;
+}
+
+@keyframes sonar{
+  0%  {transform:scale(1);  opacity:.8;}
+  100%{transform:scale(3.6);opacity:0;}
+}
+
+/* after first tap: ring fades out, dot dims */
+.hs.seen .hs-ring{animation:none;opacity:0;}
+.hs.seen .hs-dot {opacity:.42;transform:scale(.82);}
+
+/* ─── Banner ─────────────────────────────────── */
+#banner{
+  position:fixed;
+  bottom:-130px;left:50%;
+  transform:translateX(-50%);
+  background:#fff;
+  border-radius:28px;
+  padding:12px 42px 14px;
+  text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  transition:bottom .38s cubic-bezier(.34,1.56,.64,1);
+  z-index:100;
+  white-space:nowrap;
+}
+#banner.show{bottom:16px;}
+#b-em  {font-size:1.9rem;line-height:1.1;}
+#b-name{font-size:1.8rem;font-weight:900;color:#1e293b;margin-top:2px;}
+
+/* ─── Sparkles ───────────────────────────────── */
+.spark{
+  position:fixed;pointer-events:none;
+  font-size:1.4rem;z-index:999;
+  animation:fly .65s ease-out forwards;
+}
+@keyframes fly{
+  from{opacity:1;transform:translate(0,0) scale(1.2);}
+  to  {opacity:0;transform:translate(calc(var(--tx)*1px),calc(var(--ty)*1px)) scale(.1);}
+}
+</style>
+</head>
+<body>
+
+<a id="back" href="index.html">← All Games</a>
+<h1>My Body 🩺</h1>
+<div id="progress">Tap a body part to learn its name!</div>
+
+<div id="wrap">
+
+<!-- ════════════════════════════════════════════
+     CARTOON BODY  —  viewBox 0 0 300 520
+════════════════════════════════════════════ -->
+<svg viewBox="0 0 300 520" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- ── HAIR ── -->
+  <ellipse cx="150" cy="62"  rx="68" ry="50" fill="#C06ED4"/>
+  <circle  cx="83"  cy="72"  r="26"  fill="#C06ED4"/>
+  <circle  cx="217" cy="72"  r="26"  fill="#C06ED4"/>
+  <ellipse cx="150" cy="24"  rx="22" ry="24" fill="#C06ED4"/>
+
+  <!-- ── HEAD ── -->
+  <circle cx="150" cy="92" r="64" fill="#FFD93D"/>
+
+  <!-- Ears -->
+  <ellipse cx="84"  cy="96" rx="13" ry="17" fill="#FFB347"/>
+  <ellipse cx="216" cy="96" rx="13" ry="17" fill="#FFB347"/>
+
+  <!-- Eye whites -->
+  <ellipse cx="126" cy="86" rx="17" ry="18" fill="white"/>
+  <ellipse cx="174" cy="86" rx="17" ry="18" fill="white"/>
+  <!-- Irises -->
+  <circle  cx="126" cy="88" r="10"  fill="#4ECDC4"/>
+  <circle  cx="174" cy="88" r="10"  fill="#4ECDC4"/>
+  <!-- Pupils -->
+  <circle  cx="128" cy="89" r="5.5" fill="#111"/>
+  <circle  cx="176" cy="89" r="5.5" fill="#111"/>
+  <!-- Eye shine -->
+  <circle  cx="130" cy="86" r="2.5" fill="white"/>
+  <circle  cx="178" cy="86" r="2.5" fill="white"/>
+
+  <!-- Eyebrows -->
+  <path d="M 112 70 Q 126 64 140 70" stroke="#7B4A2B" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M 160 70 Q 174 64 188 70" stroke="#7B4A2B" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <ellipse cx="150" cy="105" rx="9"  ry="7"  fill="#FFB347"/>
+  <circle  cx="145" cy="108" r="3"   fill="#e8922a" opacity=".5"/>
+  <circle  cx="155" cy="108" r="3"   fill="#e8922a" opacity=".5"/>
+
+  <!-- Smile -->
+  <path d="M 128 123 Q 150 148 172 123" stroke="#cc6600" stroke-width="3.5" fill="#ff9eae" stroke-linecap="round"/>
+
+  <!-- Cheeks -->
+  <ellipse cx="108" cy="117" rx="17" ry="11" fill="#FFB3C1" opacity=".45"/>
+  <ellipse cx="192" cy="117" rx="17" ry="11" fill="#FFB3C1" opacity=".45"/>
+
+  <!-- ── NECK ── -->
+  <rect x="135" y="154" width="30" height="34" rx="7" fill="#FFD93D"/>
+
+  <!-- ── SHIRT ── -->
+  <rect x="84"  y="185" width="132" height="148" rx="24" fill="#6BCB77"/>
+  <!-- Collar V -->
+  <polygon points="130,185 150,212 170,185" fill="#58b564"/>
+  <!-- Buttons -->
+  <circle cx="150" cy="232" r="4.5" fill="#4aaa55"/>
+  <circle cx="150" cy="254" r="4.5" fill="#4aaa55"/>
+  <circle cx="150" cy="276" r="4.5" fill="#4aaa55"/>
+  <!-- Sleeve cuffs -->
+  <ellipse cx="84"  cy="203" rx="22" ry="13" fill="#58b564"/>
+  <ellipse cx="216" cy="203" rx="22" ry="13" fill="#58b564"/>
+
+  <!-- ── ARMS ── -->
+  <rect x="44"  y="198" width="38" height="116" rx="19" fill="#FFD93D"/>
+  <rect x="218" y="198" width="38" height="116" rx="19" fill="#FFD93D"/>
+
+  <!-- ── HANDS ── -->
+  <!-- Left palm + fingers -->
+  <circle  cx="63"  cy="323" r="22" fill="#FFD93D"/>
+  <ellipse cx="47"  cy="311" rx="7" ry="12" fill="#FFB347" transform="rotate(-15 47 311)"/>
+  <ellipse cx="41"  cy="326" rx="7" ry="12" fill="#FFB347"/>
+  <ellipse cx="46"  cy="340" rx="7" ry="12" fill="#FFB347" transform="rotate(14 46 340)"/>
+  <!-- Right palm + fingers -->
+  <circle  cx="237" cy="323" r="22" fill="#FFD93D"/>
+  <ellipse cx="253" cy="311" rx="7" ry="12" fill="#FFB347" transform="rotate(15 253 311)"/>
+  <ellipse cx="259" cy="326" rx="7" ry="12" fill="#FFB347"/>
+  <ellipse cx="254" cy="340" rx="7" ry="12" fill="#FFB347" transform="rotate(-14 254 340)"/>
+
+  <!-- ── PANTS WAISTBAND ── -->
+  <rect x="90"  y="328" width="120" height="22" rx="5" fill="#3a7dca"/>
+
+  <!-- ── LEGS ── -->
+  <rect x="96"  y="345" width="46" height="128" rx="23" fill="#4D96FF"/>
+  <rect x="158" y="345" width="46" height="128" rx="23" fill="#4D96FF"/>
+  <!-- Knee bumps -->
+  <ellipse cx="119" cy="418" rx="19" ry="11" fill="#3a88e8"/>
+  <ellipse cx="181" cy="418" rx="19" ry="11" fill="#3a88e8"/>
+
+  <!-- ── SHOES ── -->
+  <ellipse cx="119" cy="473" rx="33" ry="18" fill="#FF6B6B"/>
+  <ellipse cx="106" cy="463" rx="17" ry="13" fill="#ff4f4f"/>
+  <ellipse cx="181" cy="473" rx="33" ry="18" fill="#FF6B6B"/>
+  <ellipse cx="194" cy="463" rx="17" ry="13" fill="#ff4f4f"/>
+
+</svg>
+
+</div><!-- /#wrap -->
+
+<div id="banner">
+  <div id="b-em"></div>
+  <div id="b-name"></div>
+</div>
+
+<script>
+// [name, speak-text, emoji, cx (SVG 0-300), cy (SVG 0-520), dot-color, ring-color]
+const PARTS = [
+  ['Hair',      'Hair',      '💜', 150,  10, '#C06ED4'],
+  ['Head',      'Head',      '🧠', 178,  56, '#FF6B6B'],
+  ['Eyes',      'Eyes',      '👀', 126,  86, '#4ECDC4'],
+  ['Ears',      'Ears',      '👂',  84,  96, '#9B59B6'],
+  ['Nose',      'Nose',      '👃', 150, 105, '#FFB347'],
+  ['Mouth',     'Mouth',     '😄', 150, 136, '#EF4444'],
+  ['Neck',      'Neck',      '📿', 150, 171, '#45B7D1'],
+  ['Shoulders', 'Shoulders', '💪',  90, 200, '#6BCB77'],
+  ['Arms',      'Arms',      '💪',  51, 252, '#4D96FF'],
+  ['Hands',     'Hands',     '🤚',  48, 323, '#B5179E'],
+  ['Tummy',     'Tummy',     '🌟', 150, 259, '#FF8C42'],
+  ['Legs',      'Legs',      '🦵', 110, 390, '#4D96FF'],
+  ['Knees',     'Knees',     '💠', 132, 420, '#06D6A0'],
+  ['Feet',      'Feet',      '🦶', 116, 470, '#FFB703'],
+];
+
+const SPARKS  = ['✨','⭐','🌟','💫','🎉','💥'];
+const wrap    = document.getElementById('wrap');
+const banner  = document.getElementById('banner');
+const bEm     = document.getElementById('b-em');
+const bName   = document.getElementById('b-name');
+const prog    = document.getElementById('progress');
+let   found   = 0;
+let   hideTimer;
+
+PARTS.forEach(([name, speakText, emoji, cx, cy, color], i) => {
+  const d1 = ((i * 0.22) % 2.5).toFixed(2);
+  const d2 = ((i * 0.22) % 2.5 + 1.25).toFixed(2);
+
+  const el = document.createElement('div');
+  el.className = 'hs';
+  el.style.left = (cx / 300 * 100) + '%';
+  el.style.top  = (cy / 520 * 100) + '%';
+  el.innerHTML  = `
+    <div class="hs-ring" style="border-color:${color};animation-delay:${d1}s"></div>
+    <div class="hs-ring" style="border-color:${color};animation-delay:${d2}s"></div>
+    <div class="hs-dot"  style="background:${color}"></div>
+  `;
+
+  el.addEventListener('pointerdown', ev => {
+    ev.preventDefault();
+    const r = el.getBoundingClientRect();
+    onTap(name, speakText, emoji, color, el, r.left + r.width / 2, r.top + r.height / 2);
+  });
+
+  wrap.appendChild(el);
+});
+
+function onTap(name, speakText, emoji, color, el, px, py) {
+  const isNew = !el.classList.contains('seen');
+  el.classList.add('seen');
+
+  if (isNew) {
+    found++;
+    prog.textContent = found < PARTS.length
+      ? `Found ${found} of ${PARTS.length}! Keep going!`
+      : `You found all ${PARTS.length}! Amazing! 🎉`;
+  }
+
+  burst(px, py, color);
+  showBanner(name, emoji, color);
+  speak(speakText);
+}
+
+function showBanner(name, emoji, color) {
+  bEm.textContent   = emoji;
+  bName.textContent = name;
+  bName.style.color = color;
+  banner.classList.add('show');
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => banner.classList.remove('show'), 2400);
+}
+
+function burst(x, y, color) {
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement('div');
+    el.className   = 'spark';
+    el.textContent = SPARKS[i % SPARKS.length];
+    const angle = (i / 10) * Math.PI * 2;
+    const dist  = 55 + Math.random() * 65;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.style.setProperty('--tx', Math.round(Math.cos(angle) * dist));
+    el.style.setProperty('--ty', Math.round(Math.sin(angle) * dist));
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+}
+
+// Speech
+let voices = [];
+const loadVoices = () => { voices = speechSynthesis.getVoices(); };
+speechSynthesis.addEventListener('voiceschanged', loadVoices);
+loadVoices();
+
+function bestVoice() {
+  return voices.find(v => v.name === 'Google US English')
+      || voices.find(v => /^Samantha/i.test(v.name))
+      || voices.find(v => /en-US/i.test(v.lang) && v.localService)
+      || voices.find(v => /en-US/i.test(v.lang))
+      || voices.find(v => /en/i.test(v.lang))
+      || null;
+}
+
+function speak(text) {
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const v   = bestVoice();
+  if (v) utt.voice = v;
+  utt.rate  = 0.88;
+  utt.pitch = 1.0;
+  speechSynthesis.speak(utt);
+}
+</script>
+</body>
+</html>

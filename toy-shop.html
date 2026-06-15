@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Toy Shop — Kids Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:linear-gradient(150deg,#fff9e6 0%,#ffe8f0 55%,#e8f4ff 100%);
+  min-height:100svh;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+
+a#back{
+  position:fixed;top:14px;left:14px;
+  background:#fff;border:1.5px solid rgba(0,0,0,.1);
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+  border-radius:50px;padding:8px 18px;
+  color:#475569;font-weight:800;font-size:.82rem;
+  text-decoration:none;z-index:300;
+}
+
+/* ─── SCREENS ─────────────────────────────── */
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;align-items:center;min-height:100svh;}
+
+/* ══════════════════════════════════════════════
+   WELCOME SCREEN
+══════════════════════════════════════════════ */
+#s-welcome{
+  justify-content:center;
+  gap:28px;padding:40px 24px;
+  text-align:center;
+}
+
+#s-welcome h1{
+  font-size:clamp(2rem,8vw,3.4rem);
+  font-weight:900;color:#1e293b;
+  line-height:1.1;
+}
+#s-welcome .sub{font-size:1rem;color:#64748b;font-weight:700;}
+
+.mode-cards{
+  display:flex;flex-direction:column;gap:18px;
+  width:100%;max-width:420px;
+}
+
+.mode-card{
+  border-radius:24px;padding:22px 28px;cursor:pointer;
+  text-align:left;border:none;outline:none;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  box-shadow:0 6px 24px rgba(0,0,0,.13);
+}
+.mode-card:active{transform:scale(.97);}
+.mode-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.18);}
+
+.mode-card .mc-em{font-size:2.4rem;margin-bottom:8px;display:block;}
+.mode-card .mc-title{font-size:1.25rem;font-weight:900;color:#fff;margin-bottom:4px;}
+.mode-card .mc-desc{font-size:.84rem;color:rgba(255,255,255,.85);font-weight:700;line-height:1.4;}
+
+#mc-shop{background:linear-gradient(135deg,#f7971e,#ffd200);}
+#mc-buy {background:linear-gradient(135deg,#667eea,#764ba2);}
+
+/* ══════════════════════════════════════════════
+   SHOPKEEPER SCREEN
+══════════════════════════════════════════════ */
+#s-shopkeeper{
+  flex-direction:row;
+  align-items:stretch;
+  height:100svh;
+  overflow:hidden;
+}
+
+/* Left inventory panel */
+#inv-panel{
+  width:100px;min-width:80px;
+  background:linear-gradient(180deg,#fff9e6,#ffefc7);
+  border-right:2px solid #ffd166;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:56px 8px 16px;
+  gap:10px;
+  overflow-y:auto;
+  flex-shrink:0;
+}
+#inv-panel h2{
+  font-size:.62rem;font-weight:900;color:#92400e;
+  letter-spacing:.5px;text-transform:uppercase;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  position:absolute;left:38px;top:62px;
+}
+
+/* Right order area */
+#order-area{
+  flex:1;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:56px 12px 16px;
+  gap:14px;
+  overflow-y:auto;
+}
+
+#shop-title{
+  font-size:1rem;font-weight:900;color:#1e293b;
+  text-align:center;
+}
+#shop-progress{
+  font-size:.78rem;font-weight:700;color:#64748b;
+  text-align:center;min-height:1.1em;
+}
+
+.orders-grid{
+  display:flex;flex-direction:column;
+  gap:12px;width:100%;max-width:460px;
+}
+
+/* Inventory tile */
+.inv-tile{
+  width:68px;height:68px;
+  border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:grab;
+  box-shadow:0 3px 10px rgba(0,0,0,.15);
+  font-size:1.9rem;
+  position:relative;
+  flex-shrink:0;
+  transition:transform .12s;
+  touch-action:none;
+}
+.inv-tile:active{cursor:grabbing;transform:scale(.92);}
+.inv-tile .tile-label{
+  font-size:.5rem;font-weight:900;color:#fff;
+  text-transform:uppercase;letter-spacing:.4px;margin-top:1px;
+}
+.inv-tile.exhausted{opacity:.35;pointer-events:none;}
+
+/* Order box */
+.order-box{
+  background:#fff;
+  border-radius:20px;
+  padding:12px 14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.1);
+  border:2.5px solid transparent;
+}
+.order-box.complete{
+  border-color:#4ade80;
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+}
+
+.ob-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.ob-emoji{font-size:1.5rem;}
+.ob-text{font-size:.82rem;font-weight:900;color:#1e293b;}
+.ob-num{
+  margin-left:auto;
+  font-size:1.4rem;font-weight:900;
+  color:#f59e0b;
+  min-width:1.8em;text-align:right;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.ob-num.pop{transform:scale(1.5);}
+
+.ob-slots{
+  display:flex;flex-wrap:wrap;gap:7px;
+}
+
+.ob-slot{
+  width:48px;height:48px;
+  border-radius:12px;
+  border:2.5px dashed #d1d5db;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;
+  background:#f8fafc;
+  transition:background .2s,border-color .2s,transform .15s;
+}
+.ob-slot.filled{
+  background:#fff;
+  border-color:transparent;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.ob-slot.filled.bounce{animation:slotBounce .35s cubic-bezier(.34,1.56,.64,1);}
+.ob-slot.target{border-color:#a855f7;background:#faf0ff;}
+
+@keyframes slotBounce{
+  0%{transform:scale(.6);}
+  60%{transform:scale(1.18);}
+  100%{transform:scale(1);}
+}
+
+.shop-done-btn{
+  margin-top:8px;
+  padding:14px 40px;
+  border-radius:50px;
+  border:none;cursor:pointer;
+  font-size:1rem;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#4ade80,#16a34a);
+  box-shadow:0 4px 16px rgba(74,222,128,.45);
+  transition:transform .15s,opacity .15s;
+  display:none;
+}
+.shop-done-btn.visible{display:block;}
+.shop-done-btn:active{transform:scale(.96);}
+
+/* ══════════════════════════════════════════════
+   BUYER SCREEN
+══════════════════════════════════════════════ */
+#s-buyer{
+  flex-direction:row;
+  align-items:stretch;
+  height:100svh;
+  overflow:hidden;
+}
+
+/* Left shelf */
+#shelf-panel{
+  flex:1;
+  background:linear-gradient(180deg,#e8f4ff,#d4eaff);
+  border-right:2px solid #93c5fd;
+  display:flex;flex-direction:column;
+  padding:56px 10px 16px;
+  gap:16px;
+  overflow-y:auto;
+}
+
+#shelf-title{
+  font-size:.9rem;font-weight:900;color:#1e3a5f;
+  text-align:center;
+}
+
+.shelf-item{
+  background:#fff;
+  border-radius:18px;
+  padding:12px 10px;
+  box-shadow:0 3px 12px rgba(0,0,0,.1);
+  text-align:center;
+}
+.shelf-item .si-emoji{font-size:2rem;}
+.shelf-item .si-name{font-size:.7rem;font-weight:900;color:#1e293b;margin:4px 0 2px;}
+.shelf-item .si-count{
+  font-size:1.2rem;font-weight:900;color:#f59e0b;
+  min-height:1.5em;
+}
+.shelf-item .si-eq{
+  font-size:.65rem;font-weight:700;color:#94a3b8;
+  min-height:1em;
+  transition:opacity .2s;
+}
+.shelf-item .si-eq.flash{color:#ef4444;font-weight:900;font-size:.75rem;}
+
+.shelf-grab-btn{
+  width:100%;margin-top:6px;
+  padding:8px 0;border-radius:50px;
+  border:none;cursor:pointer;
+  font-size:.78rem;font-weight:900;color:#fff;
+  transition:transform .12s,opacity .15s;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.shelf-grab-btn:active{transform:scale(.94);}
+.shelf-grab-btn.empty{opacity:.3;pointer-events:none;}
+
+/* Right cart */
+#cart-panel{
+  width:140px;min-width:120px;
+  background:linear-gradient(180deg,#fff9e6,#ffefc7);
+  border-left:2px solid #ffd166;
+  display:flex;flex-direction:column;
+  padding:56px 8px 16px;
+  gap:8px;
+  overflow-y:auto;
+  flex-shrink:0;
+  align-items:center;
+}
+
+#cart-title{font-size:.65rem;font-weight:900;color:#92400e;letter-spacing:.4px;text-transform:uppercase;}
+
+#cart-total{
+  font-size:2.2rem;font-weight:900;
+  color:#1e293b;text-align:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+#cart-total.pop{animation:totalPop .32s cubic-bezier(.34,1.56,.64,1);}
+@keyframes totalPop{0%{transform:scale(1);}50%{transform:scale(1.38);}100%{transform:scale(1);}}
+
+#cart-label{font-size:.7rem;font-weight:700;color:#92400e;text-align:center;}
+
+#cart-items{
+  width:100%;
+  display:flex;flex-direction:column;gap:5px;
+  margin-top:4px;
+}
+.cart-row{
+  background:#fff;
+  border-radius:12px;padding:6px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 6px rgba(0,0,0,.09);
+  animation:cartIn .28s cubic-bezier(.34,1.56,.64,1);
+  font-size:.8rem;font-weight:900;color:#1e293b;
+}
+@keyframes cartIn{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+.cart-row .cr-em{font-size:1.1rem;}
+.cart-row .cr-ct{color:#f59e0b;}
+
+#pay-btn{
+  margin-top:auto;
+  width:100%;padding:12px 0;
+  border-radius:50px;border:none;cursor:pointer;
+  font-size:.85rem;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  box-shadow:0 4px 14px rgba(102,126,234,.5);
+  transition:transform .15s,opacity .15s;
+}
+#pay-btn:active{transform:scale(.95);}
+#pay-btn:disabled{opacity:.3;pointer-events:none;}
+
+/* ══════════════════════════════════════════════
+   END SCREEN
+══════════════════════════════════════════════ */
+#s-end{
+  justify-content:center;gap:22px;
+  text-align:center;padding:40px 24px;
+}
+#s-end .end-em{font-size:5rem;line-height:1;}
+#s-end h2{font-size:1.8rem;font-weight:900;color:#1e293b;}
+#s-end .end-sub{font-size:1rem;color:#64748b;font-weight:700;}
+#s-end .end-score{
+  font-size:3rem;font-weight:900;color:#f59e0b;
+  background:#fff;border-radius:24px;
+  padding:18px 48px;
+  box-shadow:0 6px 24px rgba(0,0,0,.12);
+}
+#s-end .end-msg{font-size:1rem;font-weight:700;color:#475569;max-width:300px;}
+
+.end-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.end-btn{
+  padding:14px 32px;border-radius:50px;
+  border:none;cursor:pointer;
+  font-size:.95rem;font-weight:900;color:#fff;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+  transition:transform .15s;
+}
+.end-btn:active{transform:scale(.96);}
+#btn-play-again{background:linear-gradient(135deg,#f7971e,#ffd200);}
+#btn-switch    {background:linear-gradient(135deg,#667eea,#764ba2);}
+#btn-home      {background:linear-gradient(135deg,#4ade80,#16a34a);}
+
+/* ─── Floating drag clone ────────────────── */
+#drag-clone{
+  position:fixed;pointer-events:none;z-index:500;
+  font-size:1.9rem;
+  transform:translate(-50%,-50%) scale(1.15);
+  opacity:.9;
+  display:none;
+}
+
+/* ─── Sparkles ────────────────────────────── */
+.spark{
+  position:fixed;pointer-events:none;
+  font-size:1.3rem;z-index:999;
+  animation:fly .65s ease-out forwards;
+}
+@keyframes fly{
+  from{opacity:1;transform:translate(0,0) scale(1.2);}
+  to  {opacity:0;transform:translate(calc(var(--tx)*1px),calc(var(--ty)*1px)) scale(.1);}
+}
+
+/* ─── Number pop overlay ─────────────────── */
+.num-pop{
+  position:fixed;pointer-events:none;z-index:600;
+  font-size:3.5rem;font-weight:900;color:#fff;
+  text-shadow:0 2px 12px rgba(0,0,0,.3);
+  animation:numFly .8s ease-out forwards;
+}
+@keyframes numFly{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(.4);}
+  40% {opacity:1;transform:translate(-50%,-70%) scale(1.2);}
+  100%{opacity:0;transform:translate(-50%,-130%) scale(.8);}
+}
+
+/* ─── Equation flash ─────────────────────── */
+.eq-flash{
+  position:fixed;pointer-events:none;z-index:600;
+  font-size:1.5rem;font-weight:900;color:#ef4444;
+  text-shadow:0 2px 8px rgba(0,0,0,.2);
+  animation:eqFly .9s ease-out forwards;
+  white-space:nowrap;
+}
+@keyframes eqFly{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(.6);}
+  35% {opacity:1;transform:translate(-50%,-80%) scale(1.1);}
+  100%{opacity:0;transform:translate(-50%,-130%) scale(.8);}
+}
+</style>
+</head>
+<body>
+
+<a id="back" href="index.html">← All Games</a>
+<div id="drag-clone"></div>
+
+<!-- ══════════════════════════════════════════
+     WELCOME
+══════════════════════════════════════════ -->
+<div id="s-welcome" class="screen active">
+  <div style="font-size:4rem">🏪</div>
+  <h1>Toy Shop</h1>
+  <p class="sub">Fill boxes · Buy toys · Count the cost!</p>
+  <div class="mode-cards">
+    <button class="mode-card" id="mc-shop" onclick="startShopkeeper()">
+      <span class="mc-em">📦</span>
+      <div class="mc-title">Shopkeeper</div>
+      <div class="mc-desc">Fill the order boxes with the right number of toys!</div>
+    </button>
+    <button class="mode-card" id="mc-buy" onclick="startBuyer()">
+      <span class="mc-em">🛒</span>
+      <div class="mc-title">Buyer</div>
+      <div class="mc-desc">Shop for toys, fill your cart, and see how much it costs!</div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SHOPKEEPER
+══════════════════════════════════════════ -->
+<div id="s-shopkeeper" class="screen">
+  <div id="inv-panel">
+    <h2>Toys</h2>
+  </div>
+  <div id="order-area">
+    <div id="shop-title">📦 Fill the Order Boxes!</div>
+    <div id="shop-progress"></div>
+    <div class="orders-grid" id="orders-grid"></div>
+    <button class="shop-done-btn" id="shop-done-btn" onclick="endShopkeeper()">All Done! 🎉</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     BUYER
+══════════════════════════════════════════ -->
+<div id="s-buyer" class="screen">
+  <div id="shelf-panel">
+    <div id="shelf-title">🏪 Choose Your Toys!</div>
+  </div>
+  <div id="cart-panel">
+    <div id="cart-title">🛒 Cart</div>
+    <div id="cart-total">$0</div>
+    <div id="cart-label">total</div>
+    <div id="cart-items"></div>
+    <button id="pay-btn" disabled onclick="endBuyer()">Pay Now 💳</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     END
+══════════════════════════════════════════ -->
+<div id="s-end" class="screen">
+  <div class="end-em" id="end-em">🎉</div>
+  <h2 id="end-title">Amazing!</h2>
+  <div class="end-sub" id="end-sub"></div>
+  <div class="end-score" id="end-score"></div>
+  <div class="end-msg"  id="end-msg"></div>
+  <div class="end-btns">
+    <button class="end-btn" id="btn-play-again" onclick="replayMode()">Play Again 🔄</button>
+    <button class="end-btn" id="btn-switch"     onclick="switchMode()">Switch Mode</button>
+    <button class="end-btn" id="btn-home"       onclick="show('s-welcome')">Home 🏠</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const TOYS = [
+  { emoji:'🐒', name:'Monkey',   color:'#f59e0b', bg:'#fef3c7' },
+  { emoji:'🐼', name:'Panda',    color:'#6b7280', bg:'#f3f4f6' },
+  { emoji:'🦁', name:'Lion',     color:'#d97706', bg:'#fef3c7' },
+  { emoji:'🐸', name:'Frog',     color:'#16a34a', bg:'#dcfce7' },
+  { emoji:'🐰', name:'Bunny',    color:'#ec4899', bg:'#fce7f3' },
+  { emoji:'🐻', name:'Bear',     color:'#92400e', bg:'#fef3c7' },
+  { emoji:'🦊', name:'Fox',      color:'#ea580c', bg:'#ffedd5' },
+  { emoji:'🐨', name:'Koala',    color:'#64748b', bg:'#f1f5f9' },
+];
+const SPARKS = ['✨','⭐','🌟','💫','🎉'];
+
+// ── Screen helper ──────────────────────────────
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Number → word (1–15) ───────────────────────
+const WORDS = ['','one','two','three','four','five','six','seven','eight','nine','ten',
+               'eleven','twelve','thirteen','fourteen','fifteen'];
+
+// ══════════════════════════════════════════════
+//  SPEECH
+// ══════════════════════════════════════════════
+let voices = [];
+const loadVoices = () => { voices = speechSynthesis.getVoices(); };
+speechSynthesis.addEventListener('voiceschanged', loadVoices);
+loadVoices();
+
+function bestVoice() {
+  return voices.find(v => v.name === 'Google US English')
+      || voices.find(v => /^Samantha/i.test(v.name))
+      || voices.find(v => /en-US/i.test(v.lang) && v.localService)
+      || voices.find(v => /en-US/i.test(v.lang))
+      || voices.find(v => /en/i.test(v.lang))
+      || null;
+}
+
+function speak(text, rate = 0.88, pitch = 1.0) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = bestVoice();
+  if (v) u.voice = v;
+  u.rate = rate; u.pitch = pitch; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+// ══════════════════════════════════════════════
+//  SHOPKEEPER MODE
+// ══════════════════════════════════════════════
+let shopOrders   = [];   // [{toy, target, placed, slotEls[]}]
+let shopComplete = 0;
+let shopDragging = null; // {toyIdx, startX, startY}
+
+function startShopkeeper() {
+  show('s-shopkeeper');
+  buildShopkeeper();
+  speak('Fill each box with the right number of toys! Grab a toy and drop it in the box.');
+}
+
+function buildShopkeeper() {
+  shopOrders   = [];
+  shopComplete = 0;
+
+  // Pick 3 random toy types
+  const toyIndices = shuffle([...Array(TOYS.length).keys()]).slice(0, 3);
+  // Each order: random count 1–6
+  toyIndices.forEach(ti => {
+    const target = 2 + Math.floor(Math.random() * 5); // 2–6
+    shopOrders.push({ toy: TOYS[ti], toyIdx: ti, target, placed: 0, slotEls: [] });
+  });
+
+  // Build inventory panel
+  const inv = document.getElementById('inv-panel');
+  inv.innerHTML = '<h2>Toys</h2>';
+  toyIndices.forEach(ti => {
+    const toy = TOYS[ti];
+    const tile = document.createElement('div');
+    tile.className = 'inv-tile';
+    tile.style.background = toy.bg;
+    tile.style.border = `2px solid ${toy.color}`;
+    tile.dataset.toyIdx = ti;
+    tile.innerHTML = `<span>${toy.emoji}</span><span class="tile-label">${toy.name}</span>`;
+    attachShopDrag(tile, ti);
+    inv.appendChild(tile);
+  });
+
+  // Build order boxes
+  const grid = document.getElementById('orders-grid');
+  grid.innerHTML = '';
+  shopOrders.forEach((order, oi) => {
+    const box = document.createElement('div');
+    box.className = 'order-box';
+    box.id = `ob-${oi}`;
+
+    const slots = Array.from({length: order.target}, (_, si) => {
+      const slot = document.createElement('div');
+      slot.className = 'ob-slot';
+      slot.dataset.oi  = oi;
+      slot.dataset.si  = si;
+      order.slotEls.push(slot);
+      return slot;
+    });
+
+    box.innerHTML = `
+      <div class="ob-header">
+        <span class="ob-emoji">${order.toy.emoji}</span>
+        <span class="ob-text">${order.toy.name}s needed:</span>
+        <span class="ob-num" id="ob-num-${oi}">${order.target}</span>
+      </div>
+      <div class="ob-slots" id="ob-slots-${oi}"></div>
+    `;
+    slots.forEach(s => box.querySelector(`#ob-slots-${oi}`).appendChild(s));
+    grid.appendChild(box);
+
+    // Drop targets
+    slots.forEach(slot => {
+      slot.addEventListener('pointerup', () => tryShopDrop(oi));
+    });
+    box.addEventListener('pointerup', () => tryShopDrop(oi));
+  });
+
+  document.getElementById('shop-progress').textContent = '';
+  document.getElementById('shop-done-btn').classList.remove('visible');
+}
+
+function attachShopDrag(tile, ti) {
+  const clone = document.getElementById('drag-clone');
+
+  const onStart = ev => {
+    ev.preventDefault();
+    shopDragging = { ti };
+    clone.textContent = TOYS[ti].emoji;
+    clone.style.display = 'block';
+    moveDragClone(ev);
+    // highlight valid targets
+    document.querySelectorAll('.ob-slot:not(.filled)').forEach(s => {
+      const oi = parseInt(s.dataset.oi);
+      if (shopOrders[oi].toyIdx === ti) s.classList.add('target');
+    });
+  };
+
+  const onMove = ev => {
+    if (!shopDragging) return;
+    moveDragClone(ev);
+  };
+
+  const onEnd = ev => {
+    if (!shopDragging) return;
+    document.querySelectorAll('.ob-slot').forEach(s => s.classList.remove('target'));
+    clone.style.display = 'none';
+
+    // Find element under pointer
+    clone.style.display = 'none';
+    const pt = getPoint(ev);
+    const under = document.elementFromPoint(pt.x, pt.y);
+    const slot  = under?.closest('.ob-slot');
+    const box   = under?.closest('.order-box');
+    if (slot && !slot.classList.contains('filled')) {
+      const oi = parseInt(slot.dataset.oi);
+      if (shopOrders[oi].toyIdx === shopDragging.ti) tryShopDrop(oi);
+    } else if (box) {
+      const oi = parseInt(box.id.replace('ob-',''));
+      if (!isNaN(oi) && shopOrders[oi].toyIdx === shopDragging.ti) tryShopDrop(oi);
+    }
+    shopDragging = null;
+  };
+
+  tile.addEventListener('pointerdown', onStart);
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup',   onEnd);
+}
+
+function tryShopDrop(oi) {
+  if (!shopDragging) return;
+  const order = shopOrders[oi];
+  if (order.toyIdx !== shopDragging.ti) {
+    speak('Try the right box!');
+    return;
+  }
+  if (order.placed >= order.target) return;
+
+  const slot = order.slotEls[order.placed];
+  slot.textContent = order.toy.emoji;
+  slot.classList.add('filled');
+  requestAnimationFrame(() => slot.classList.add('bounce'));
+
+  order.placed++;
+  const remaining = order.target - order.placed;
+
+  // Update number display
+  const numEl = document.getElementById(`ob-num-${oi}`);
+  numEl.textContent = remaining;
+  numEl.classList.remove('pop');
+  requestAnimationFrame(() => numEl.classList.add('pop'));
+  setTimeout(() => numEl.classList.remove('pop'), 300);
+
+  // Voice feedback
+  const word = WORDS[order.placed] || order.placed;
+  if (remaining === 0) {
+    document.getElementById(`ob-${oi}`).classList.add('complete');
+    shopComplete++;
+    burst(window.innerWidth / 2, window.innerHeight / 2, order.toy.color);
+    speak(`${WORDS[order.target]} ${order.toy.name}s! Box is full! Great job!`);
+    updateShopProgress();
+    if (shopComplete === shopOrders.length) {
+      setTimeout(() => {
+        document.getElementById('shop-done-btn').classList.add('visible');
+        speak('You filled all the boxes! Amazing!');
+        burst(window.innerWidth / 2, window.innerHeight / 3, '#ffd200');
+      }, 600);
+    }
+  } else {
+    const more = remaining === 1 ? 'one more to go' : `${WORDS[remaining] || remaining} more to go`;
+    speak(`${word} ${order.toy.name}${order.placed > 1 ? 's' : ''}. ${more}!`);
+    updateShopProgress();
+  }
+}
+
+function updateShopProgress() {
+  const total   = shopOrders.reduce((s, o) => s + o.target, 0);
+  const placed  = shopOrders.reduce((s, o) => s + o.placed, 0);
+  document.getElementById('shop-progress').textContent =
+    `${placed} of ${total} toys placed!`;
+}
+
+function endShopkeeper() {
+  const total = shopOrders.reduce((s, o) => s + o.target, 0);
+  showEnd('shopkeeper', total);
+}
+
+// ══════════════════════════════════════════════
+//  BUYER MODE
+// ══════════════════════════════════════════════
+let shelfItems  = []; // [{toy, stock, inCart}]
+let cartTotal   = 0;
+let lastMode    = '';
+
+function startBuyer() {
+  show('s-buyer');
+  buildBuyer();
+  speak('Welcome to the toy shop! Tap a toy to put it in your cart. Each toy costs one dollar!');
+}
+
+function buildBuyer() {
+  cartTotal  = 0;
+  shelfItems = [];
+
+  // Pick 3–4 toy types with random stock 2–8
+  const count  = 3 + Math.floor(Math.random() * 2); // 3 or 4
+  const indices = shuffle([...Array(TOYS.length).keys()]).slice(0, count);
+  indices.forEach(ti => {
+    shelfItems.push({ toy: TOYS[ti], stock: 2 + Math.floor(Math.random() * 6), inCart: 0 });
+  });
+
+  renderShelf();
+  renderCart();
+}
+
+function renderShelf() {
+  const panel = document.getElementById('shelf-panel');
+  panel.innerHTML = '<div id="shelf-title">🏪 Choose Your Toys!</div>';
+
+  shelfItems.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'shelf-item';
+    el.id = `si-${i}`;
+    el.innerHTML = `
+      <div class="si-emoji">${item.toy.emoji}</div>
+      <div class="si-name">${item.toy.name}</div>
+      <div class="si-count" id="si-count-${i}">${item.stock} left</div>
+      <div class="si-eq"   id="si-eq-${i}"></div>
+      <button class="shelf-grab-btn ${item.stock === 0 ? 'empty' : ''}"
+              id="si-btn-${i}"
+              style="background:linear-gradient(135deg,${item.toy.bg},${item.toy.color}10);
+                     color:${item.toy.color};border:2px solid ${item.toy.color}40;"
+              onclick="buyOne(${i})">Add to cart +</button>
+    `;
+    panel.appendChild(el);
+  });
+}
+
+function buyOne(i) {
+  const item = shelfItems[i];
+  if (item.stock <= 0) return;
+
+  item.stock--;
+  item.inCart++;
+  cartTotal++;
+
+  // Shelf: show subtraction equation
+  const prevStock = item.stock + 1;
+  const eqEl = document.getElementById(`si-eq-${i}`);
+  eqEl.textContent = `${prevStock} − 1 = ${item.stock}`;
+  eqEl.className = 'si-eq flash';
+  setTimeout(() => { eqEl.className = 'si-eq'; }, 1200);
+
+  // Floating equation animation
+  const btn = document.getElementById(`si-btn-${i}`);
+  const r   = btn.getBoundingClientRect();
+  const eq  = document.createElement('div');
+  eq.className   = 'eq-flash';
+  eq.textContent = `${prevStock} − 1 = ${item.stock}`;
+  eq.style.left  = (r.left + r.width / 2) + 'px';
+  eq.style.top   = r.top + 'px';
+  document.body.appendChild(eq);
+  setTimeout(() => eq.remove(), 950);
+
+  // Update count display
+  const countEl = document.getElementById(`si-count-${i}`);
+  countEl.textContent = item.stock === 0 ? 'Sold out!' : `${item.stock} left`;
+  if (item.stock === 0) {
+    document.getElementById(`si-btn-${i}`).classList.add('empty');
+  }
+
+  // Update cart
+  renderCart();
+
+  // Pop the total
+  const totalEl = document.getElementById('cart-total');
+  totalEl.classList.remove('pop');
+  requestAnimationFrame(() => totalEl.classList.add('pop'));
+  setTimeout(() => totalEl.classList.remove('pop'), 350);
+
+  // Float number pop
+  const cx = r.left + r.width / 2;
+  const cy = r.top;
+  const np = document.createElement('div');
+  np.className   = 'num-pop';
+  np.textContent = item.toy.emoji;
+  np.style.left  = cx + 'px';
+  np.style.top   = cy + 'px';
+  document.body.appendChild(np);
+  setTimeout(() => np.remove(), 850);
+
+  burst(r.left + r.width / 2, r.top + r.height / 2, item.toy.color);
+
+  // Voice
+  const totalWord = WORDS[cartTotal] || cartTotal;
+  const leftWord  = WORDS[item.stock] || item.stock;
+  if (item.stock === 0) {
+    speak(`${item.toy.name}! That's ${totalWord} dollar${cartTotal !== 1 ? 's' : ''}. No more ${item.toy.name}s left!`);
+  } else {
+    speak(`${item.toy.name}! That's ${totalWord} dollar${cartTotal !== 1 ? 's' : ''}. ${leftWord} ${item.toy.name}${item.stock !== 1 ? 's' : ''} left.`);
+  }
+}
+
+function renderCart() {
+  document.getElementById('cart-total').textContent = `$${cartTotal}`;
+  document.getElementById('cart-label').textContent = cartTotal === 1 ? 'dollar' : 'dollars';
+
+  const rows = document.getElementById('cart-items');
+  rows.innerHTML = '';
+  shelfItems.forEach(item => {
+    if (item.inCart === 0) return;
+    const row = document.createElement('div');
+    row.className = 'cart-row';
+    row.innerHTML = `<span class="cr-em">${item.toy.emoji}</span><span class="cr-ct">×${item.inCart}</span>`;
+    rows.appendChild(row);
+  });
+
+  document.getElementById('pay-btn').disabled = cartTotal === 0;
+}
+
+function endBuyer() {
+  showEnd('buyer', cartTotal);
+}
+
+// ══════════════════════════════════════════════
+//  END SCREEN
+// ══════════════════════════════════════════════
+let endMode = '';
+
+function showEnd(mode, value) {
+  endMode = mode;
+  show('s-end');
+
+  const isBuyer = mode === 'buyer';
+
+  document.getElementById('end-em').textContent    = isBuyer ? '💳' : '📦';
+  document.getElementById('end-title').textContent  = 'Amazing job!';
+  document.getElementById('end-sub').textContent   = isBuyer
+    ? 'Here is what you spent:'
+    : 'You filled all the boxes!';
+  document.getElementById('end-score').textContent  = isBuyer
+    ? `$${value}`
+    : `${value} toys!`;
+  document.getElementById('end-msg').textContent   = isBuyer
+    ? `You bought ${value} toy${value !== 1 ? 's' : ''}. That costs ${WORDS[value] || value} dollar${value !== 1 ? 's' : ''}!`
+    : 'Every box is perfectly filled. You are a great shopkeeper!';
+
+  setTimeout(() => {
+    burst(window.innerWidth * .35, window.innerHeight * .35, '#ffd200');
+    burst(window.innerWidth * .65, window.innerHeight * .35, '#f472b6');
+    burst(window.innerWidth * .5,  window.innerHeight * .5,  '#60a5fa');
+  }, 200);
+
+  const msg = isBuyer
+    ? `You spent ${WORDS[value] || value} dollar${value !== 1 ? 's' : ''}! Great shopping!`
+    : 'You filled all the boxes! You are an amazing shopkeeper!';
+  setTimeout(() => speak(msg), 400);
+}
+
+function replayMode() {
+  if (endMode === 'buyer') startBuyer();
+  else startShopkeeper();
+}
+
+function switchMode() {
+  if (endMode === 'buyer') startShopkeeper();
+  else startBuyer();
+}
+
+// ══════════════════════════════════════════════
+//  DRAG CLONE helpers
+// ══════════════════════════════════════════════
+function getPoint(ev) {
+  const t = ev.touches?.[0] ?? ev.changedTouches?.[0] ?? ev;
+  return { x: t.clientX, y: t.clientY };
+}
+
+function moveDragClone(ev) {
+  const pt = getPoint(ev);
+  const clone = document.getElementById('drag-clone');
+  clone.style.left = pt.x + 'px';
+  clone.style.top  = pt.y + 'px';
+}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function burst(x, y, color) {
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement('div');
+    el.className   = 'spark';
+    el.textContent = SPARKS[i % SPARKS.length];
+    const angle = (i / 10) * Math.PI * 2;
+    const dist  = 45 + Math.random() * 60;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.style.setProperty('--tx', Math.round(Math.cos(angle) * dist));
+    el.style.setProperty('--ty', Math.round(Math.sin(angle) * dist));
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+}
+</script>
+</body>
+</html>

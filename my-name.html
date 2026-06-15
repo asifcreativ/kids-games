@@ -386,14 +386,18 @@ function soundWin()   {
 /* ════════════════════════════════════════════
    SPEECH
 ════════════════════════════════════════════ */
-function speak(text, rate = 0.85, pitch = 1.1) {
+function speak(text, rate = 0.88, pitch = 1.0) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.rate = rate; u.pitch = pitch; u.volume = 1;
   const go = () => {
-    const voices = speechSynthesis.getVoices();
-    const v = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en'));
+    const vs = speechSynthesis.getVoices();
+    const v  = vs.find(v => v.name === 'Google US English')
+            || vs.find(v => /^Samantha/i.test(v.name))
+            || vs.find(v => /en-US/i.test(v.lang) && v.localService)
+            || vs.find(v => /en-US/i.test(v.lang))
+            || vs.find(v => /en/i.test(v.lang));
     if (v) u.voice = v;
     speechSynthesis.speak(u);
   };
