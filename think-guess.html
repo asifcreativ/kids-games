@@ -192,7 +192,7 @@ a#back{
 // ── Riddle data ───────────────────────────────────────────────────────────
 // Each riddle: { q, cat, catName, win, ans (index into ch), ch [[emoji, label], ...] }
 const RIDDLES = [
-  // ANIMALS
+  // ── ANIMALS (16) ──────────────────────────────────────────────────────────
   { cat:'🐾', catName:'Animal',
     q:   'I look like a horse, but I have black and white stripes. What am I?',
     win: 'Yes! A zebra has beautiful black and white stripes!',
@@ -233,7 +233,47 @@ const RIDDLES = [
     win: 'Grr! Bears sleep all winter — that is called hibernating!',
     ans: 0, ch:[['🐻','Bear'],['🐺','Wolf'],['🦍','Gorilla'],['🐹','Hamster']] },
 
-  // FOOD
+  { cat:'🐾', catName:'Animal',
+    q:   'I am a bird but I cannot fly! I walk by waddling side to side. I live in icy cold places and I love to swim! What am I?',
+    win: 'Waddle waddle! Penguins are birds that swim instead of fly!',
+    ans: 0, ch:[['🐧','Penguin'],['🦆','Duck'],['🐦','Sparrow'],['🦅','Eagle']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I start my life as a tiny tadpole swimming in water. Then I grow legs and jump on land! I say ribbit ribbit. What am I?',
+    win: 'Ribbit! A frog starts as a tadpole and then grows legs to hop around!',
+    ans: 1, ch:[['🐢','Turtle'],['🐸','Frog'],['🦎','Lizard'],['🐊','Crocodile']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am a bird that stays awake at night and sleeps during the day. I have very big round eyes and I say hoo hoo! What am I?',
+    win: 'Hoo hoo! Owls use their huge eyes to see perfectly in the dark!',
+    ans: 2, ch:[['🦜','Parrot'],['🦅','Eagle'],['🦉','Owl'],['🐦','Sparrow']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am a colourful bird. I am very clever and I can copy the words that people say! What am I?',
+    win: 'Hello hello! Parrots are brilliant birds that can learn to talk just like us!',
+    ans: 1, ch:[['🐦','Sparrow'],['🦜','Parrot'],['🦩','Flamingo'],['🦚','Peacock']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I am called the best friend of humans. I wag my tail when I am happy and excited. I say woof woof! What am I?',
+    win: 'Woof woof! Dogs are loyal, loving, and love to play with their families!',
+    ans: 1, ch:[['🐱','Cat'],['🐶','Dog'],['🐹','Hamster'],['🦊','Fox']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I have no legs and no arms at all. I slither along the ground in an S shape. I have a long forked tongue that flicks in and out. What am I?',
+    win: 'Ssss! Snakes use their tongue to smell the air around them!',
+    ans: 1, ch:[['🦎','Lizard'],['🐍','Snake'],['🐛','Worm'],['🐊','Crocodile']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I have eight legs — not two, not four, but eight! I spin a very sticky web to catch my food. What am I?',
+    win: 'A spider spins a beautiful web — each one is a tiny work of art!',
+    ans: 2, ch:[['🦟','Mosquito'],['🐜','Ant'],['🕷️','Spider'],['🦗','Cricket']] },
+
+  { cat:'🐾', catName:'Animal',
+    q:   'I say meow. I love to curl up and purr when someone strokes me. I have soft fur, sharp claws, and whiskers. What am I?',
+    win: 'Purrrr! Cats love to cuddle and are one of the most popular pets in the world!',
+    ans: 1, ch:[['🐶','Dog'],['🐱','Cat'],['🐭','Mouse'],['🐰','Rabbit']] },
+
+  // ── FOOD (9) ──────────────────────────────────────────────────────────────
   { cat:'🍽️', catName:'Food',
     q:   'I am round and red. I grow on a tree. I taste sweet and crunchy. They say I keep the doctor away! What am I?',
     win: 'Crunch! An apple a day keeps the doctor away!',
@@ -251,10 +291,35 @@ const RIDDLES = [
 
   { cat:'🍽️', catName:'Food',
     q:   'I am big and round. Outside I am green. Inside I am bright red with tiny black seeds. I am sweet and juicy! What am I?',
-    win: 'So juicy! Watermelon is sweet and perfect on a hot sunny day!',
+    win: 'So juicy! Watermelon is the perfect sweet treat on a hot sunny day!',
     ans: 0, ch:[['🍉','Watermelon'],['🥝','Kiwi'],['🍈','Melon'],['🥦','Broccoli']] },
 
-  // NATURE
+  { cat:'🍽️', catName:'Food',
+    q:   'I am round and flat with melted cheese on top. I come in yummy triangle slices. Everyone loves me at parties! What am I?',
+    win: 'Delicious! Pizza is one of the most loved foods in the whole world!',
+    ans: 1, ch:[['🥪','Sandwich'],['🍕','Pizza'],['🥞','Pancakes'],['🫔','Wrap']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'I am white and creamy. I come from cows. I help make your bones and teeth very strong. You drink me in a glass. What am I?',
+    win: 'Drink up! Milk has calcium that makes your bones super strong!',
+    ans: 2, ch:[['💧','Water'],['🧃','Juice'],['🥛','Milk'],['🍵','Tea']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'A chicken lays me. I am oval in shape. You can fry me, boil me, or scramble me for breakfast! What am I?',
+    win: 'Eggs are amazing — you can cook them so many different yummy ways!',
+    ans: 2, ch:[['🧈','Butter'],['🧀','Cheese'],['🥚','Egg'],['🍞','Bread']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'I am orange and long and crunchy. I grow under the ground. Rabbits absolutely love to eat me! What am I?',
+    win: 'Crunch crunch! Carrots are sweet, healthy, and rabbits go crazy for them!',
+    ans: 0, ch:[['🥕','Carrot'],['🌽','Corn'],['🥒','Cucumber'],['🍠','Sweet Potato']] },
+
+  { cat:'🍽️', catName:'Food',
+    q:   'I am cold and sweet. I come in flavours like chocolate and strawberry. I melt very fast if you do not eat me quickly! What am I?',
+    win: 'Yum yum! Ice cream is the perfect treat on a hot sunny day!',
+    ans: 0, ch:[['🍦','Ice Cream'],['🍰','Cake Slice'],['🍭','Lollipop'],['🍫','Chocolate']] },
+
+  // ── NATURE (7) ────────────────────────────────────────────────────────────
   { cat:'🌍', catName:'Nature',
     q:   'I shine bright in the sky during the day. I give warmth and light to the whole world. Without me, nothing could grow. What am I?',
     win: 'Brilliant! The sun gives us warmth and helps all plants grow!',
@@ -270,7 +335,27 @@ const RIDDLES = [
     win: 'A rainbow! It has red, orange, yellow, green, blue, indigo, and violet!',
     ans: 1, ch:[['☀️','Sunshine'],['🌈','Rainbow'],['🌸','Flowers'],['🌊','Ocean']] },
 
-  // VEHICLES
+  { cat:'🌍', catName:'Nature',
+    q:   'I am very tall and I live for hundreds of years. Birds make nests in my branches. I have lots of leaves and a thick trunk. What am I?',
+    win: 'Trees are wonderful — they give us shade, clean air, and a home for animals!',
+    ans: 2, ch:[['🌵','Cactus'],['🌿','Bush'],['🌳','Tree'],['🌾','Grass']] },
+
+  { cat:'🌍', catName:'Nature',
+    q:   'I am very pretty. I grow up from the ground. Bees visit me to collect my nectar. I can be red, yellow, pink, or purple! What am I?',
+    win: 'Flowers are beautiful and bees need them to make sweet golden honey!',
+    ans: 1, ch:[['🍃','Leaf'],['🌸','Flower'],['🌱','Seedling'],['🍄','Mushroom']] },
+
+  { cat:'🌍', catName:'Nature',
+    q:   'I fall from the sky in winter. I am cold and white and fluffy. You can build a snowman with me! I melt when the sun comes out. What am I?',
+    win: 'Snow day! Snow is frozen water that floats down from clouds in winter!',
+    ans: 1, ch:[['🌧️','Rain'],['❄️','Snow'],['💨','Wind'],['⚡','Lightning']] },
+
+  { cat:'🌍', catName:'Nature',
+    q:   'I am the biggest thing on our whole planet. I am made of salty water. Fish, whales, and sharks all live inside me. I have giant waves. What am I?',
+    win: 'The ocean covers more than half of our entire planet — it is enormous!',
+    ans: 2, ch:[['🏞️','Lake'],['🏔️','Mountain'],['🌊','Ocean'],['🏜️','Desert']] },
+
+  // ── VEHICLES (6) ──────────────────────────────────────────────────────────
   { cat:'🚗', catName:'Vehicle',
     q:   'I am big and red. When there is a fire somewhere, I come racing very fast with my loud siren. What am I?',
     win: 'Wee woo wee woo! Fire trucks race to put out fires and keep us safe!',
@@ -281,7 +366,27 @@ const RIDDLES = [
     win: 'Whoosh! Airplanes take us on adventures to faraway places!',
     ans: 2, ch:[['🚁','Helicopter'],['🚀','Rocket'],['✈️','Airplane'],['🛸','UFO']] },
 
-  // KNOWLEDGE
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I have two wheels. You sit on me and push the pedals with your feet to go. I do not need any petrol or fuel at all. What am I?',
+    win: 'Pedal pedal! Bicycles are fun, healthy, and good for the planet!',
+    ans: 1, ch:[['🛴','Scooter'],['🚲','Bicycle'],['🛵','Moped'],['🏍️','Motorbike']] },
+
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I travel on special metal tracks on the ground. I am made of many carriages joined together. I go choo choo! What am I?',
+    win: 'Choo choo! Trains can carry hundreds of passengers all at once!',
+    ans: 2, ch:[['🚌','Bus'],['🚎','Trolley'],['🚂','Train'],['🚇','Metro']] },
+
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I float on water. Sailors and fishermen use me. I can be big or small and I cross rivers, lakes, and seas. What am I?',
+    win: 'Sail away! Boats have carried people across the water for thousands of years!',
+    ans: 0, ch:[['⛵','Boat'],['🏄','Surfboard'],['🚗','Car'],['🚁','Helicopter']] },
+
+  { cat:'🚗', catName:'Vehicle',
+    q:   'I do not have wings like an airplane. Instead I have big spinning blades on top that make me fly. I can go straight up into the air! What am I?',
+    win: 'Whirr whirr! Helicopters can hover in one spot — airplanes cannot do that!',
+    ans: 1, ch:[['✈️','Airplane'],['🚁','Helicopter'],['🚀','Rocket'],['🛸','UFO']] },
+
+  // ── KNOWLEDGE (8) ─────────────────────────────────────────────────────────
   { cat:'💡', catName:'Knowledge',
     q:   'You use me every morning and every night to keep your teeth clean and healthy. I have a long handle and soft bristles. What am I?',
     win: 'Great habit! Brushing your teeth keeps them clean and strong!',
@@ -296,6 +401,52 @@ const RIDDLES = [
     q:   'At night when the sky is dark, I appear with millions of my friends. I look like tiny sparkling lights very far away. What am I?',
     win: 'Twinkle twinkle little star! Stars light up the night sky — some are even bigger than our sun!',
     ans: 2, ch:[['🌙','Moon'],['☀️','Sun'],['⭐','Star'],['💫','Comet']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I have many pages with words and pictures. You find stories and adventures inside me. You can find me at a library! What am I?',
+    win: 'Reading books opens the door to incredible adventures and amazing things to learn!',
+    ans: 0, ch:[['📖','Book'],['📰','Newspaper'],['📝','Notebook'],['🗞️','Magazine']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I have two hands that keep spinning round and round. I tell you what time of day it is. You might find me on a wall or on your wrist. What am I?',
+    win: 'A clock helps us know when to wake up, eat lunch, play, and go to sleep!',
+    ans: 1, ch:[['📅','Calendar'],['⏰','Clock'],['⏱️','Timer'],['🔔','Bell']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I keep you dry when it is raining outside. You open me up above your head like a big round shield. I have a long curved handle. What am I?',
+    win: 'Stay dry! An umbrella is your very best friend on a rainy day!',
+    ans: 1, ch:[['🧥','Raincoat'],['🌂','Umbrella'],['🥾','Boots'],['🧤','Gloves']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I am perfectly round. You can kick me, throw me, bounce me, or catch me. I am used in so many different sports! What am I?',
+    win: 'Balls are used in football, basketball, tennis, and so many more fun sports!',
+    ans: 2, ch:[['🎯','Target'],['🥊','Boxing Glove'],['⚽','Ball'],['🏸','Shuttlecock']] },
+
+  { cat:'💡', catName:'Knowledge',
+    q:   'I come in a pair — you always need two of me. You put me on your feet before going outside. I keep your feet safe and comfy. What am I?',
+    win: 'Great! We wear shoes to protect our feet and keep them cozy and safe!',
+    ans: 1, ch:[['🧦','Socks'],['👟','Shoes'],['🧤','Gloves'],['🎩','Hat']] },
+
+  // ── COLOURS (4) ───────────────────────────────────────────────────────────
+  { cat:'🎨', catName:'Colour',
+    q:   'I am the colour of fire engines, strawberries, and apples. I am bright and bold and very easy to notice! What colour am I?',
+    win: 'Red is a bold, beautiful colour — the colour of love and fire and apples!',
+    ans: 2, ch:[['🔵','Blue'],['🟡','Yellow'],['🔴','Red'],['🟢','Green']] },
+
+  { cat:'🎨', catName:'Colour',
+    q:   'I am the colour of the sky on a sunny day. I am also the colour of the deep deep ocean. What colour am I?',
+    win: 'Beautiful blue — the colour of the sky above us and the sea around us!',
+    ans: 1, ch:[['🟣','Purple'],['🔵','Blue'],['🟠','Orange'],['⚫','Black']] },
+
+  { cat:'🎨', catName:'Colour',
+    q:   'I am the colour of the sun, ripe bananas, and lemons. I am bright and cheerful and make people feel happy! What colour am I?',
+    win: 'Yellow is the colour of sunshine — it makes everything feel warm and bright!',
+    ans: 2, ch:[['🔴','Red'],['🟢','Green'],['🟡','Yellow'],['🟤','Brown']] },
+
+  { cat:'🎨', catName:'Colour',
+    q:   'I am the colour of grass, frogs, and the leaves on trees. I am the colour of nature and the outdoors. What colour am I?',
+    win: 'Green is the colour of nature — trees, plants, and so many beautiful animals!',
+    ans: 3, ch:[['🔴','Red'],['🔵','Blue'],['🟡','Yellow'],['🟢','Green']] },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -341,7 +492,8 @@ speechSynthesis.addEventListener('voiceschanged', loadVoices);
 loadVoices();
 
 function getVoice() {
-  return voices.find(v => v.name === 'Google US English')
+  return voices.find(v => /siri/i.test(v.name))
+      || voices.find(v => v.name === 'Google US English')
       || voices.find(v => /^Samantha/i.test(v.name))
       || voices.find(v => /en-US/i.test(v.lang) && v.localService)
       || voices.find(v => /en-US/i.test(v.lang))
@@ -349,14 +501,29 @@ function getVoice() {
       || null;
 }
 
-function speak(text, rate = 0.88, pitch = 1.0) {
+// Split into sentences so each chunk sounds natural, with a breath pause between.
+// onDone is called once after the last chunk finishes (or immediately if cancelled).
+let _speakToken = 0;
+
+function speak(text, rate = 0.88, onDone = null) {
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  const v = getVoice();
-  if (v) u.voice = v;
-  u.rate  = rate;
-  u.pitch = pitch;
-  speechSynthesis.speak(u);
+  const token  = ++_speakToken;
+  const chunks = (text.match(/[^.!?]+[.!?]*/g) ?? [text]).map(s => s.trim()).filter(Boolean);
+  let i = 0;
+
+  const next = () => {
+    if (_speakToken !== token) return;
+    if (i >= chunks.length) { onDone?.(); return; }
+    const u = new SpeechSynthesisUtterance(chunks[i++]);
+    const v = getVoice();
+    if (v) u.voice = v;
+    u.rate   = rate;
+    u.pitch  = 1.0;
+    u.volume = 1;
+    u.onend  = () => { if (_speakToken === token) setTimeout(next, 85); };
+    speechSynthesis.speak(u);
+  };
+  next();
 }
 
 // ── State & DOM refs ──────────────────────────────────────────────────────
@@ -377,7 +544,7 @@ const hudEl     = document.getElementById('hud');
 const progWrap  = document.getElementById('prog-wrap');
 const endDiv    = document.getElementById('end');
 
-rBox.addEventListener('click', () => speak(shuffled[qi].q, 0.79, 1.2));
+rBox.addEventListener('click', () => speak(shuffled[qi].q, 0.85));
 document.getElementById('play-again').addEventListener('click', restart);
 
 // ── Game flow ─────────────────────────────────────────────────────────────
@@ -412,7 +579,7 @@ function loadQ(idx) {
     choicesEl.appendChild(d);
   });
 
-  setTimeout(() => speak(r.q, 0.79, 1.2), 400);
+  setTimeout(() => speak(r.q, 0.85), 400);
 }
 
 function onTap(el, correct) {
@@ -426,8 +593,11 @@ function onTap(el, correct) {
     const rc = el.getBoundingClientRect();
     burst(rc.left + rc.width / 2, rc.top + rc.height / 2);
 
-    setTimeout(() => speak(shuffled[qi].win, 0.84, 1.2), 150);
-    setTimeout(nextQ, 2700);
+    // Move to next question only after the win sentence finishes speaking.
+    // Safety net fires after 9s in case speech stalls.
+    const goNext = (() => { let done=false; return () => { if(!done){done=true; nextQ();} }; })();
+    setTimeout(() => speak(shuffled[qi].win, 0.92, () => setTimeout(goNext, 500)), 150);
+    setTimeout(goNext, 9000);
 
   } else {
     firstTry = false;
@@ -436,7 +606,7 @@ function onTap(el, correct) {
       el.classList.remove('wrong');
       el.classList.add('eliminated');
     }, 430);
-    speak('Oops! Try again!', 0.9, 1.3);
+    speak('Oops! Try again!', 0.95);
   }
 }
 
@@ -475,7 +645,7 @@ function showEnd() {
   setTimeout(() => burst(window.innerWidth * .5, window.innerHeight * .35), 100);
   setTimeout(() => burst(window.innerWidth * .25, window.innerHeight * .5), 350);
   setTimeout(() => burst(window.innerWidth * .75, window.innerHeight * .5), 600);
-  setTimeout(() => speak('Hooray! You finished! Well done!', 0.82, 1.3), 400);
+  setTimeout(() => speak('Hooray! You finished! Well done!'), 400);
 }
 
 function restart() {
